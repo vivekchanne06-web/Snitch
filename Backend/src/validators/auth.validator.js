@@ -18,7 +18,7 @@ export const registerValidatorUser = [
     .matches(/^\d{10}$/).withMessage("Contact number must be 10 digits long"),
 
     body("password")
-    .isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+    .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
 
     body("fullName")
     .isLength({ min: 2, max: 100 }).withMessage("Full name must be between 2 and 100 characters long"),
@@ -26,5 +26,13 @@ export const registerValidatorUser = [
    body("isSeller")
     .isBoolean().withMessage("isSeller must be a boolean value"),
     
+    validateRequest
+]
+
+export const loginValidatorUser = [
+    body("email")
+    .isEmail().withMessage("Please provide a valid email"),
+    body("password")
+    .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long"),
     validateRequest
 ]

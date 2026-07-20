@@ -10,7 +10,7 @@ async function sendTokenResponse(user, res, message) {
             expiresIn: '7d'
         });
 
-    res.cookies('token', token,)
+    res.cookie('token', token,)
 
     res.status(200).json({
         success: true,
@@ -64,5 +64,16 @@ export const loginUser = async (req, res) => {
 
     const { email, password } = req.body;
 
+    const user = await UserModel.findOne({ email });
 
+    if (!user) {
+        return res.status(400).json({ message: "Invalid email or password" });
+    }
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+        return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    await sendTokenResponse(user, res, "User logged in successfully");
 }
