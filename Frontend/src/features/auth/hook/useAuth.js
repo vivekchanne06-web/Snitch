@@ -39,17 +39,19 @@ export const useAuth = () => {
             dispatch(setUser(data.user))
             return data;
         } catch (error) {
-             const backendMessage =
-                error?.response?.data?.message ||
-                error?.response?.data?.error ||
-                error?.message ||
+            // Read the backend's exact message from the response body.
+            // Never use error.message — it contains the raw Axios string.
+            const data = error?.response?.data;
+            const backendMessage =
+                data?.errors?.[0]?.msg ||
+                data?.message ||
+                data?.error ||
                 "Something went wrong. Please try again.";
-            dispatch(setError(backendMessage))
-            // Re-throw a plain Error carrying the backend message
+            dispatch(setError(backendMessage));
             throw new Error(backendMessage);
         }
         finally {
-            dispatch(setLoading(false)) 
+            dispatch(setLoading(false));
         }
     }
     return{
