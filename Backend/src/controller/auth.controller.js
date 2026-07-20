@@ -2,16 +2,33 @@ import UserModel from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import { config } from "../config/config.js";
 
-async function sendTokenResponse(user, res) {
+async function sendTokenResponse(user, res, message) {
     const token = jwt.sign({
         id: user._id
-    }, config.JWT_SECRET)
+    }, config.JWT_SECRET,
+        {
+            expiresIn: '7d'
+        });
 
+    res.cookies('token', token,)
+
+    res.status(200).json({
+        success: true,
+        message: message,
+        token,
+        user: {
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            contact: user.contact,
+            role: user.role
+        }
+    });
 }
 
 
 export const registerUser = async (req, res) => {
-    const { email, contact, password, fullName } = req.body;
+    const { email, contact, password, fullName, isSeller } = req.body;
 
     try {
         // Check if the user already exists
@@ -23,13 +40,29 @@ export const registerUser = async (req, res) => {
         }
 
         // Create a new user
-        const User = await UserModel.create({ email, contact, password, fullName });
+        const User = await UserModel.create({
+             email, 
+             contact, 
+             password, 
+             fullName, 
+             role: isSeller ? 'seller' : 'buyer' 
+            });
 
 
+        await sendTokenResponse(User, res, "User registered successfully");
 
 
     } catch (error) {
         console.error("Error occurred while checking user:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
+}
+
+
+export const loginUser = async (req, res) => {
+
+
+    const { email, password } = req.body;
+
+
 }

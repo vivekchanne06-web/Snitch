@@ -23,6 +23,8 @@ export const registerValidatorUser = [
     body("fullName")
     .isLength({ min: 2, max: 100 }).withMessage("Full name must be between 2 and 100 characters long"),
 
-
-    validateRequest()
+   body("isSeller")
+    .isBoolean().withMessage("isSeller must be a boolean value"),
+    
+    validateRequest
 ]
