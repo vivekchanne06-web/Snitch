@@ -288,7 +288,7 @@ const Register = () => {
                 className="group w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-[#DAD9D4] bg-white hover:bg-[#FAF9F5] hover:border-[#B4B2A7] hover:shadow-sm transition-all duration-200 text-sm font-semibold text-[#3D3929] focus-visible:ring-2 focus-visible:ring-[#A95A3A]/30 focus-visible:outline-none"
               >
                 <GoogleIcon size={18} />
-                <span>Continue with Google</span>
+                <a href="/api/auth/google" className="text-sm font-semibold text-[#3D3929] focus-visible:ring-2 focus-visible:ring-[#A95A3A]/30 focus-visible:outline-none">Continue with Google</a>
               </button>
             </motion.div>
 

@@ -41,12 +41,12 @@ export const registerUser = async (req, res) => {
 
         // Create a new user
         const User = await UserModel.create({
-             email, 
-             contact, 
-             password, 
-             fullName, 
-             role: isSeller ? 'seller' : 'buyer' 
-            });
+            email,
+            contact,
+            password,
+            fullName,
+            role: isSeller ? 'seller' : 'buyer'
+        });
 
 
         await sendTokenResponse(User, res, "User registered successfully");
@@ -61,7 +61,7 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
 
-
+    try {
     const { email, password } = req.body;
 
     const user = await UserModel.findOne({ email });
@@ -74,6 +74,18 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
         return res.status(400).json({ message: "Invalid email or password" });
     }
-
+    
     await sendTokenResponse(user, res, "User logged in successfully");
+}catch (error) {
+    console.error("Error occurred while logging in:", error);
+    return res.status(500).json({ message: "Internal server error" });
+}
+
+}
+
+export const googleCallback = async (req, res) => {
+    
+    console.log("Google callback called");
+
+    res.redirect(`http://localhost:5173`)
 }
