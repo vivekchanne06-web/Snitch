@@ -8,22 +8,23 @@ export const addProduct = async (req, res) => {
 
     const images = await Promise.all(
         req.files.map(async (file) => {
-        return await uploadImage({
-            buffer: file.buffer,
-            fileName: file.originalname,
-            folder: "Snitch"
-        });
+            return await uploadImage({
+                buffer: file.buffer,
+                fileName: file.originalname,
+                folder: "Snitch"
+            });
 
-    }));
+        }));
 
     console.log(images);
-    
+
     const product = new productModel({
         title,
         description,
-        price: { amount: priceAmount,
-        currency: priceCurrency || "INR"
-    },
+        price: {
+            amount: priceAmount,
+            currency: priceCurrency || "INR"
+        },
         images,
         seller: seller._id
     });
@@ -36,3 +37,18 @@ export const addProduct = async (req, res) => {
         product
     });
 };
+
+export const getProduct = async (req, res) => {
+
+    const seller = req.user;
+
+    const products = await productModel.find({ seller: seller._id });
+
+    res.status(200).json({
+        message: "Products fetched successfully",
+        success: true,
+        products
+    }); 
+
+
+}
