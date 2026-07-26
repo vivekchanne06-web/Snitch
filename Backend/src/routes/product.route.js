@@ -12,7 +12,7 @@ const upload = multer({
 const router = Router();
 
 
-router.post('/api/products/add', aunthicateSeller,upload.array('images', 6),addProductValidator ,addProduct);
+router.post('/api/products/add', aunthicateSeller,upload.array('images', 7),addProductValidator ,addProduct);
 
 router.get('/api/products/seller', aunthicateSeller, getProduct);
 

@@ -149,7 +149,7 @@ const AddProduct = () => {
       images.forEach((img) => fd.append("images", img.file));
       await handleAddProduct(fd);
       setShowSuccess(true);
-      setTimeout(() => navigate("/"), 2800);
+      setTimeout(() => navigate("/seller/products"), 2800);
     } catch (err) {
       setServerError(
         err?.response?.data?.message ||
@@ -199,7 +199,7 @@ const AddProduct = () => {
         <div className="shrink-0 px-6 pt-6 pb-3 flex items-center justify-between gap-4">
           {/* Back */}
           <Link
-            to="/seller"
+            to="/seller/products"
             className="flex items-center gap-1.5 text-sm text-[#6E6D68] hover:text-[#3D3929] transition-colors font-medium group"
           >
             <ArrowLeft
