@@ -1,5 +1,5 @@
 import { setError,setLoading,setUser } from "../state/auth.slice";
-import { register,login } from "../services/auth.api";
+import { register,login,getMe } from "../services/auth.api";
 import {useDispatch} from "react-redux"
 
 
@@ -13,7 +13,7 @@ export const useAuth = () => {
             dispatch(setLoading(true))
             const data= await register({email,password,contact,fullName,isSeller})
             dispatch(setUser(data.user))
-            return data;
+            return data.user;
         
         } catch (error) {
             // Extract the backend's exact error message when available
@@ -37,7 +37,7 @@ export const useAuth = () => {
             dispatch(setLoading(true))
             const data= await login({email,password})
             dispatch(setUser(data.user))
-            return data;
+            return data.user;
         } catch (error) {
             // Read the backend's exact message from the response body.
             // Never use error.message — it contains the raw Axios string.
@@ -54,8 +54,26 @@ export const useAuth = () => {
             dispatch(setLoading(false));
         }
     }
+
+
+    async function handleGetMe(){
+        try {
+            dispatch(setLoading(true))
+            const data = await getMe();
+            dispatch(setUser(data.user))
+            return data;
+        } catch (error) {
+            console.error("Failed to fetch user", error);
+        }
+        finally {
+            dispatch(setLoading(false));
+        }
+    }
+
+
     return{
         handleRegister,
         handleLogin,
+        handleGetMe,
     }
 }   

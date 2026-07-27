@@ -116,10 +116,17 @@ const Login = () => {
     if (!validateAll()) return;
 
     try {
-      await handleLogin({ email: form.email, password: form.password });
+     const user = await handleLogin({ email: form.email, password: form.password });
       setIsSuccess(true);
       setServerError("");
-      setTimeout(() => navigate("/"), 2200);
+      if(user.role === "buyer"){
+        setTimeout(() => navigate("/"), 2200);
+      }
+      else if(user.role == "seller") {
+        setTimeout(() => navigate("/seller/products"), 2200);
+      }
+      
+
     } catch (error) {
       setServerError(
         error?.message || "Something went wrong. Please try again."
