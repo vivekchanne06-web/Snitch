@@ -4,11 +4,12 @@ import Login from "../features/auth/pages/Login";
 import AddProduct from "../features/products/pages/AddProduct";
 import Dashboard from "../features/products/pages/Dashboard";
 import Protected from "../features/auth/components/Protected";
+import Home from "../features/products/pages/Home";
 
 export const routes = createBrowserRouter([
     {
         path: "/",
-        element: <h1>Hello Snitch User</h1>
+        element: <Home />
     },
     {
         path: "/register",

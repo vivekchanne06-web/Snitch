@@ -33,12 +33,12 @@ passport.use(new GoogleStrategy({
 
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (_req, res) => {
-    res.status(200).json({ message: "server is running" });
+app.get("/health", (_req, res) => {
+    res.status(200).json({ message: "server is running" }); 
 });
 
 app.use("/api/auth", authRouter);
-app.use("/", productRouter);
+app.use("/api/products", productRouter);
 
 
 

@@ -8,7 +8,6 @@ import { useEffect } from 'react'
 
 const App = () => {
 const user = useSelector(state=>state.auth.user)
-console.log(user )
 
 const {handleGetMe}=useAuth()
 
