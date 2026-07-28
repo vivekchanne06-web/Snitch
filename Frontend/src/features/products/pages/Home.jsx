@@ -828,6 +828,7 @@ const ProductCard = ({ product, index }) => {
   const [hovered, setHovered] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
   const images = (product.images || []).map((img) => img.url || img);
+  const navigate = useNavigate();
 
   return (
     <motion.article
@@ -856,6 +857,7 @@ const ProductCard = ({ product, index }) => {
     >
       {/* Image container — 4:5 */}
       <div
+      onClick={()=>navigate(`/product/${product._id}`)}
         style={{
           position: "relative",
           paddingBottom: "125%",
@@ -897,6 +899,7 @@ const ProductCard = ({ product, index }) => {
               >
                 {/* View Details */}
                 <motion.button
+                onClick={()=>navigate(`/product/${product._id}`)}
                   whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.95 }}
                   style={{
@@ -982,7 +985,9 @@ const ProductCard = ({ product, index }) => {
       </div>
 
       {/* Card body */}
-      <div style={{ padding: "14px 16px 16px" }}>
+      <div
+      
+       style={{ padding: "14px 16px 16px" }}>
         <h3
           style={{
             fontFamily: '"Outfit", sans-serif',
