@@ -48,6 +48,110 @@ const SHIMMER_CSS = `
   }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .product-detail-shell {
+    --pd-max-width: clamp(1120px, 90vw, 1520px);
+    width: min(100%, var(--pd-max-width));
+    margin: 0 auto;
+    padding-inline: clamp(20px, 4.8vw, 64px);
+    box-sizing: border-box;
+  }
+
+  .product-hero-section {
+    min-height: calc(100vh - 72px);
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .product-hero-inner {
+    width: 100%;
+    padding-block: clamp(10px, 1.4vw, 16px);
+  }
+
+  .product-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+    gap: clamp(20px, 3.5vw, 56px);
+    min-height: clamp(460px, calc(100vh - 104px), 820px);
+    align-items: stretch;
+  }
+
+  .product-gallery-column,
+  .product-info-column {
+    min-width: 0;
+  }
+
+  .product-gallery-column {
+    position: sticky;
+    top: calc(72px + clamp(12px, 2vw, 24px));
+    align-self: start;
+    height: min(100%, clamp(460px, calc(100vh - 106px), 820px));
+    overflow: hidden;
+  }
+
+  @media (min-width: 1181px) {
+    .product-hero-section {
+      height: calc(100vh - 72px);
+    }
+
+    .product-hero-inner {
+      min-height: 100%;
+    }
+
+    .product-hero-grid {
+      height: 100%;
+      min-height: 0;
+    }
+
+    .product-gallery-column {
+      height: 100%;
+    }
+  }
+
+  .product-info-column {
+    align-self: start;
+  }
+
+  @media (max-width: 1399px) {
+    .product-hero-grid {
+      grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+    }
+  }
+
+  @media (max-width: 1180px) {
+    .product-hero-section {
+      min-height: auto;
+      height: auto;
+    }
+
+    .product-hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+      min-height: unset;
+      height: auto;
+    }
+
+    .product-gallery-column {
+      position: static;
+      top: auto;
+      height: auto;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .product-detail-shell {
+      --pd-max-width: 100%;
+      padding-inline: 20px;
+    }
+
+    .product-hero-inner {
+      padding-block: 24px 12px;
+    }
+
+    .product-hero-grid {
+      gap: 24px;
+    }
+  }
 `;
 
 /* ── Currency helper ───────────────────────────────────────────── */
@@ -295,14 +399,14 @@ const ImageGallery = ({ images }) => {
   /* ── DESKTOP & TABLET Layout ───────────────────────────────────── */
   if (!isMobile) {
     return (
-      <div style={{ display: "flex", gap: "16px", height: "100%", alignItems: "stretch" }}>
+      <div style={{ display: "flex", gap: "clamp(10px, 1.2vw, 16px)", height: "100%", minHeight: 0, alignItems: "stretch", width: "100%" }}>
         {/* Vertical Scrollable Thumbnail Strip */}
         {isMultiple && (
           <div
             className="no-scrollbar"
             style={{
-              display: "flex", flexDirection: "column", gap: "10px",
-              flexShrink: 0, width: "72px",
+              display: "flex", flexDirection: "column", gap: "clamp(8px, 1vw, 10px)",
+              flexShrink: 0, width: "clamp(56px, 5.2vw, 78px)",
               overflowY: "auto",
               maxHeight: "100%",
               paddingRight: "4px",
@@ -315,7 +419,8 @@ const ImageGallery = ({ images }) => {
                 whileHover={{ y: -2, opacity: 0.88 }}
                 whileTap={{ scale: 0.95 }}
                 style={{
-                  width: "68px", height: "86px",
+                  width: "100%",
+                  aspectRatio: "4 / 5",
                   borderRadius: "10px",
                   overflow: "hidden",
                   border: i === activeIdx ? `2.5px solid ${C.primary}` : `2px solid transparent`,
@@ -342,14 +447,16 @@ const ImageGallery = ({ images }) => {
 
         {/* Main Image Container — object-fit: cover for complete fill */}
         <div
-          style={{ flex: 1, height: "100%", position: "relative" }}
+          style={{ flex: 1, minWidth: 0, minHeight: 0, position: "relative", width: "100%" }}
           onMouseEnter={() => setIsMainHovered(true)}
           onMouseLeave={() => setIsMainHovered(false)}
         >
           <div
             style={{
               position: "relative",
-              width: "100%", height: "100%",
+              width: "100%",
+              height: "100%",
+              minHeight: "clamp(420px, 66vh, 780px)",
               borderRadius: "18px",
               overflow: "hidden",
               background: C.secondary,
@@ -602,11 +709,13 @@ const ProductInfoPanel = ({ product }) => {
 
   return (
     <div
+      className="product-info-panel"
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "14px",
-        padding: "4px 0",
+        gap: "clamp(8px, 1vw, 12px)",
+        padding: "clamp(2px, 0.4vw, 6px) 0",
+        maxWidth: "56ch",
       }}
     >
       {/* 1. Brand Eyebrow & Wishlist Button */}
@@ -698,7 +807,7 @@ const ProductInfoPanel = ({ product }) => {
       <div
         className="no-scrollbar"
         style={{
-          maxHeight: "120px",
+          maxHeight: "clamp(88px, 12vh, 140px)",
           overflowY: "auto",
           paddingRight: "4px",
         }}
@@ -1035,14 +1144,14 @@ const RelatedProducts = ({ currentId }) => {
   if (related.length === 0) return null;
 
   return (
-    <section style={{ padding: "80px 0 60px", borderTop: `1px solid ${C.border}` }}>
+    <section style={{ padding: "clamp(26px, 3.2vw, 46px) 0 clamp(44px, 5vw, 68px)", borderTop: `1px solid ${C.border}` }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        style={{ marginBottom: "40px" }}
+        style={{ marginBottom: "clamp(24px, 3vw, 40px)" }}
       >
         <p style={{
           fontSize: "10px", fontWeight: 700, letterSpacing: "0.25em",
@@ -1296,8 +1405,8 @@ const ProductDetail = () => {
         <AnimatePresence mode="wait">
           {/* Loading Skeleton */}
           {loading && (
-            <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "24px clamp(20px, 5vw, 64px)" }}>
-              <div style={{ display: isMobile ? "none" : "grid", gridTemplateColumns: "55fr 45fr", gap: "48px", height: "calc(100vh - 120px)" }}>
+            <div className="product-detail-shell" style={{ paddingBlock: "24px" }}>
+              <div style={{ display: isMobile ? "none" : "grid", gridTemplateColumns: "minmax(0, 55fr) minmax(0, 45fr)", gap: "clamp(20px, 3.5vw, 56px)", minHeight: "clamp(500px, calc(100vh - 120px), 860px)" }}>
                 <div style={{ display: "flex", gap: "16px", height: "100%" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {[0, 1, 2, 3].map((i) => <SkeletonBlock key={i} w="68px" h="86px" radius="10px" delay={i * 0.05} />)}
@@ -1332,52 +1441,27 @@ const ProductDetail = () => {
             >
               {/* ── HERO PRODUCT SECTION — calc(100vh - 72px) ── */}
               <section
+                className="product-hero-section"
                 style={{
-                  height: isMobile ? "auto" : "calc(100vh - 72px)",
-                  maxHeight: isMobile ? "none" : "calc(100vh - 72px)",
-                  display: "flex",
-                  alignItems: "center",
                   boxSizing: "border-box",
-                  overflow: "hidden",
                 }}
               >
                 <div
+                  className="product-detail-shell product-hero-inner"
                   style={{
-                    maxWidth: "1400px",
                     width: "100%",
-                    height: isMobile ? "auto" : "100%",
-                    margin: "0 auto",
-                    padding: isMobile ? "24px 20px" : "20px clamp(20px, 5vw, 64px)",
-                    boxSizing: "border-box",
                   }}
                 >
                   <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: isMobile ? "1fr" : "55fr 45fr",
-                      gap: "clamp(24px, 4vw, 56px)",
-                      height: isMobile ? "auto" : "100%",
-                      alignItems: "stretch",
-                    }}
+                    className="product-hero-grid"
                   >
                     {/* ── LEFT (55%): Sticky Image Gallery ────────── */}
-                    <div
-                      style={{
-                        position: isMobile ? "static" : "sticky",
-                        top: "72px",
-                        height: isMobile ? "auto" : "100%",
-                        overflow: "hidden",
-                      }}
-                    >
+                    <div className="product-gallery-column">
                       <ImageGallery images={product.images || []} />
                     </div>
 
                     {/* ── RIGHT (45%): Compact Product Info ───── */}
-                    <div
-                      style={{
-                        height: isMobile ? "auto" : "100%",
-                    }}
-                    >
+                    <div className="product-info-column">
                       <ProductInfoPanel product={product} />
                     </div>
                   </div>
@@ -1386,10 +1470,10 @@ const ProductDetail = () => {
 
               {/* ── RELATED PRODUCTS ──────────────────────────────── */}
               <div
+                className="product-detail-shell"
                 style={{
-                  maxWidth: "1400px",
-                  margin: "0 auto",
-                  padding: "0 clamp(20px, 5vw, 64px)",
+                  paddingTop: 0,
+                  paddingBottom: 0,
                 }}
               >
                 <RelatedProducts currentId={product._id} />
