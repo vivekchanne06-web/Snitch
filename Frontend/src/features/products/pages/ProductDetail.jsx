@@ -282,7 +282,7 @@ const Navbar = ({ scrolled }) => {
           <motion.button
             whileHover={{ scale: 1.06, y: -1 }}
             whileTap={{ scale: 0.94 }}
-            onClick={() => (user.role === "seller" ? navigate("") : null)}
+            onClick={() => (user.role === "seller" ? navigate("/seller/products") : null)}
             style={{
               width: "36px", height: "36px",
               borderRadius: "50%",

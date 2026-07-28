@@ -84,3 +84,58 @@ export const getProductDetail = async (req, res) => {
     });
 
 }
+
+export const addVariant = async (req, res) => {
+
+    const productId = req.params.productId;
+    const product = await productModel.findOne({
+        _id: productId,
+        seller: req.user._id 
+    });
+
+    if(!product) {
+        return res.status(404).json({
+            message: "Product not found",
+            success: false
+        });
+    }
+
+    const files = req.files;
+
+    let images=[]
+
+    if (files && files.length > 0) {
+    images = await Promise.all(
+        files.map(async (file) => {
+            return await uploadImage({
+                buffer: file.buffer,
+                fileName: file.originalname,
+                folder: "Snitch",
+            });
+        })
+    );
+}
+
+    const price = Number(req.body.priceAmount)
+    const stock = Number(req.body.stock)
+    const attributes = JSON.parse(req.body.attributes || '{}');
+
+
+    product.variants.push({
+        images,
+        price: {
+            amount: price || product.price.amount,
+            currency: req.body.priceCurrency || product.price.currency 
+        },
+        stock: stock,
+        attributes
+    });
+    await product.save();
+
+    res.status(201).json({
+        message: "Variant added successfully",
+        success: true,
+        product
+    });
+    
+}

@@ -235,8 +235,10 @@ const ProductCard = ({ product, index, onDelete }) => {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Image container — 4:5 aspect ratio */}
-      <div className="relative overflow-hidden" style={{ paddingBottom: "125%" }}>
-
+      <div 
+        onClick={()=>{navigate(`/seller/products/${product._id}`);}}
+      className="relative overflow-hidden" style={{ paddingBottom: "125%" }}>
+       
         {/* Slideshow / fallback */}
         <ProductImageSlideshow
           images={images}
@@ -277,23 +279,14 @@ const ProductCard = ({ product, index, onDelete }) => {
                 <motion.button
                   whileHover={{ scale: 1.07, y: -1 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={(e) => { e.stopPropagation(); navigate("/product/" + product._id); }}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/seller/products/${product._id}`); }}
                   className="flex items-center gap-1.5 h-8 px-3.5 rounded-none bg-white text-[#3D3929] text-[11px] font-semibold tracking-wide hover:bg-[#FAF9F5] transition-colors duration-150 shadow-sm"
                 >
                   <Eye size={12} />
                   View
                 </motion.button>
 
-                {/* Edit */}
-                <motion.button
-                  whileHover={{ scale: 1.07, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => { e.stopPropagation(); navigate("/edit-product/" + product._id); }}
-                  className="flex items-center gap-1.5 h-8 px-3.5 rounded-none bg-[#A95A3A] text-white text-[11px] font-semibold tracking-wide hover:bg-[#8B4A2F] transition-colors duration-150 shadow-sm"
-                >
-                  <Pencil size={12} />
-                  Edit
-                </motion.button>
+
 
                 {/* Delete */}
                 <motion.button
