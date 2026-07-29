@@ -964,25 +964,34 @@ const ExistingVariants = ({ variants }) => {
               >
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-                  <span
-                    style={{
-                      fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
-                      textTransform: "uppercase", color: C.primary,
-                      background: "rgba(169,90,58,0.08)",
-                      padding: "4px 10px", borderRadius: "6px",
-                    }}
-                  >
-                    Variant #{idx + 1}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: "12px", fontWeight: 600,
-                      color: variant.stock > 0 ? C.success : C.error,
-                      display: "flex", alignItems: "center", gap: "4px",
-                    }}
-                  >
-                    ● {variant.stock > 0 ? `Stock: ${variant.stock}` : "Out of Stock"}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span
+                      style={{
+                        fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
+                        textTransform: "uppercase", color: C.primary,
+                        background: "rgba(169,90,58,0.08)",
+                        padding: "4px 10px", borderRadius: "6px",
+                      }}
+                    >
+                      Variant #{idx + 1}
+                    </span>
+                    {variant.sku && (
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: C.muted, letterSpacing: "0.06em" }}>
+                        SKU: {variant.sku}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span
+                      style={{
+                        fontSize: "12px", fontWeight: 600,
+                        color: variant.stock > 0 ? C.success : C.error,
+                        display: "flex", alignItems: "center", gap: "4px",
+                      }}
+                    >
+                      ● {variant.stock > 0 ? `Stock: ${variant.stock}` : "Out of Stock"}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Main Variant Row */}
@@ -1046,6 +1055,48 @@ const ExistingVariants = ({ variants }) => {
                         ₹{Number(priceVal).toLocaleString("en-IN")}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Action Buttons (Edit / Delete) */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignSelf: "center" }}>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => alert("Edit Variant feature coming soon")}
+                      style={{
+                        padding: "6px 12px",
+                        background: C.bg,
+                        color: C.text,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      Edit
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => alert("Delete Variant feature coming soon")}
+                      style={{
+                        padding: "6px 12px",
+                        background: "rgba(211,47,47,0.06)",
+                        color: C.error,
+                        border: `1px solid rgba(211,47,47,0.2)`,
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      Delete
+                    </motion.button>
                   </div>
                 </div>
 
@@ -1221,6 +1272,9 @@ const AddVariantForm = ({ productId, product, onSuccess, onCancel }) => {
         },
         title: product?.title || "",
         description: product?.description || "",
+        category: product?.category || "",
+        brand: product?.brand || "",
+        seller: product?.seller || "",
         priceCurrency: product?.price?.currency || "INR",
         attributes: attributesObj,
       };
@@ -1918,79 +1972,170 @@ const SellerProductDetail = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* HERO SELLER PRODUCT SECTION */}
+              {/* ══ HERO: Gallery (55%) + Product Info Summary (45%) ══ */}
               <section className="product-hero-section">
                 <div className="product-detail-shell product-hero-inner">
                   <div className="product-hero-grid">
-                    {/* ── LEFT (55%): Sticky Image Gallery ────────── */}
+                    {/* LEFT: Sticky Image Gallery */}
                     <div className="product-gallery-column">
                       <ImageGallery images={product.images || []} />
                     </div>
 
-                    {/* ── RIGHT (45%): Seller Info & Management ───── */}
+                    {/* RIGHT: Product Info Summary only (no variants here) */}
                     <div className="product-info-column">
-                      {/* Product Overview & Stats */}
                       <SellerProductInfo product={product} />
 
-                      {/* Existing Variants List */}
-                      <div ref={variantsRef}>
-                        <ExistingVariants variants={product.variants || []} />
-                      </div>
-
-                      {/* "+ Add New Variant" Trigger Button */}
-                      {!isFormOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          style={{ marginTop: "24px" }}
+                      {/* Quick-access: Add Variant trigger pinned in right column */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        style={{ marginTop: "28px" }}
+                      >
+                        <motion.button
+                          whileHover={{ scale: 1.015, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleOpenForm}
+                          style={{
+                            width: "100%", height: "50px",
+                            background: C.primary, color: "#FFFFFF",
+                            border: "none", borderRadius: "8px",
+                            cursor: "pointer", fontSize: "13px", fontWeight: 700,
+                            letterSpacing: "0.1em", textTransform: "uppercase",
+                            boxShadow: "0 6px 24px rgba(169,90,58,0.32)",
+                            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                            transition: "all 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = C.primaryDk;
+                            e.currentTarget.style.boxShadow = "0 8px 28px rgba(169,90,58,0.42)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = C.primary;
+                            e.currentTarget.style.boxShadow = "0 6px 24px rgba(169,90,58,0.32)";
+                          }}
                         >
-                          <motion.button
-                            whileHover={{ scale: 1.015, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={handleOpenForm}
+                          <Plus size={16} />
+                          Add New Variant
+                        </motion.button>
+
+                        {/* Variant count summary */}
+                        {product.variants?.length > 0 && (
+                          <p
                             style={{
-                              width: "100%", height: "50px",
-                              background: C.primary, color: "#FFFFFF",
-                              border: "none", borderRadius: "8px",
-                              cursor: "pointer", fontSize: "13px", fontWeight: 700,
-                              letterSpacing: "0.1em", textTransform: "uppercase",
-                              boxShadow: "0 6px 24px rgba(169,90,58,0.32)",
-                              display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                              transition: "all 0.2s ease",
+                              marginTop: "12px",
+                              fontSize: "12px",
+                              color: C.muted,
+                              textAlign: "center",
+                              letterSpacing: "0.02em",
                             }}
                           >
-                            <Plus size={16} />
-                            Add New Variant
-                          </motion.button>
-                        </motion.div>
-                      )}
-
-                      {/* Add New Variant Form (Revealed smoothly on trigger) */}
-                      <AnimatePresence>
-                        {isFormOpen && (
-                          <motion.div
-                            ref={formRef}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                          >
-                            <AddVariantForm
-                              productId={productId}
-                              product={product}
-                              onSuccess={async () => {
-                                await fetchProductDetails();
-                                handleCloseForm();
-                              }}
-                              onCancel={handleCloseForm}
-                            />
-                          </motion.div>
+                            {product.variants.length} variant{product.variants.length !== 1 ? "s" : ""} configured — see below
+                          </p>
                         )}
-                      </AnimatePresence>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
               </section>
+
+              {/* ══ FULL-WIDTH: Existing Variants ══════════════════════════ */}
+              <div
+                ref={variantsRef}
+                style={{
+                  borderTop: `1px solid ${C.border}`,
+                  background: C.bg,
+                  paddingTop: "48px",
+                  paddingBottom: "12px",
+                }}
+              >
+                <div className="product-detail-shell">
+                  <ExistingVariants variants={product.variants || []} />
+                </div>
+              </div>
+
+              {/* ══ FULL-WIDTH: Add Variant Form (collapsible) ═════════════ */}
+              <div
+                ref={formRef}
+                style={{
+                  borderTop: `1px solid ${C.border}`,
+                  background: C.card,
+                  paddingTop: "8px",
+                  paddingBottom: "48px",
+                }}
+              >
+                <div className="product-detail-shell">
+                  {/* Collapsible header */}
+                  <AnimatePresence initial={false}>
+                    {!isFormOpen ? (
+                      <motion.div
+                        key="closed"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.22 }}
+                        style={{ paddingTop: "32px" }}
+                      >
+                        <motion.button
+                          whileHover={{ scale: 1.01, y: -1 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={handleOpenForm}
+                          style={{
+                            width: "100%",
+                            height: "56px",
+                            background: C.white,
+                            color: C.text,
+                            border: `1.5px dashed ${C.border}`,
+                            borderRadius: "12px",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            fontWeight: 700,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "10px",
+                            transition: "all 0.2s ease",
+                            boxShadow: "0 2px 12px rgba(61,57,41,0.04)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = C.primary;
+                            e.currentTarget.style.color = C.primary;
+                            e.currentTarget.style.background = "rgba(169,90,58,0.03)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = C.border;
+                            e.currentTarget.style.color = C.text;
+                            e.currentTarget.style.background = C.white;
+                          }}
+                        >
+                          <Plus size={16} />
+                          Add New Variant
+                        </motion.button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="open"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <AddVariantForm
+                          productId={productId}
+                          product={product}
+                          onSuccess={async () => {
+                            await fetchProductDetails();
+                            handleCloseForm();
+                          }}
+                          onCancel={handleCloseForm}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

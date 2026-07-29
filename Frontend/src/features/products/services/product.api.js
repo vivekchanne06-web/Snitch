@@ -2,29 +2,29 @@ import axios from "axios";
 import { image } from "framer-motion/client";
 
 const productApi = axios.create({
-    baseURL : "/api/products",
-    withCredentials : true, 
+    baseURL: "/api/products",
+    withCredentials: true,
 });
 
 export const addProduct = async (FormData) => {
     try {
-        const response = await productApi.post("/add",FormData);
+        const response = await productApi.post("/add", FormData);
         return response.data;
     } catch (error) {
         throw error;
     }
-}   
-export  const getSellerProduct = async() =>{
+}
+export const getSellerProduct = async () => {
     try {
         const response = await productApi.get("/seller");
         console.log(response.data);
         return response.data;
     } catch (error) {
-        throw error;    
+        throw error;
     }
 }
 
-export const getAllProducts = async() =>{
+export const getAllProducts = async () => {
     try {
         const response = await productApi.get("/");
         return response.data;
@@ -33,42 +33,54 @@ export const getAllProducts = async() =>{
     }
 }
 
-export const getProductDetail = async (ProductId)=>{
+export const getProductDetail = async (ProductId) => {
 
     try {
         const response = await productApi.get(`/detail/${ProductId}`);
         return response.data;
     } catch (error) {
         throw error;
-    } 
-    
+    }
+
 
 }
-
 
 export const addVariant = async (ProductId, newProductVarient) => {
     try {
         const formData = new FormData();
-        
+
         newProductVarient.images.forEach((image) => {
             const file = image?.file || image;
             formData.append("images", file);
         });
-        
+
         formData.append("stock", newProductVarient.stock);
-        formData.append("priceAmount", newProductVarient.price.amount);
+        if (newProductVarient.price?.amount) {
+            formData.append("priceAmount", newProductVarient.price.amount);
+        } else if (newProductVarient.priceAmount) {
+            formData.append("priceAmount", newProductVarient.priceAmount);
+        }
+
         formData.append("attributes", JSON.stringify(newProductVarient.attributes));
 
-        // Send backend required fields taken from existing product
-        if (newProductVarient.title) {
-            formData.append("title", newProductVarient.title);
+        // Automatically include the existing parent product information to satisfy backend requirements
+        if (newProductVarient.title) formData.append("title", newProductVarient.title);
+        if (newProductVarient.description) formData.append("description", newProductVarient.description);
+        if (newProductVarient.category) {
+            // Handle category object or string
+            formData.append("category", typeof newProductVarient.category === 'object' ? newProductVarient.category._id || newProductVarient.category : newProductVarient.category);
         }
-        if (newProductVarient.description) {
-            formData.append("description", newProductVarient.description);
+        if (newProductVarient.brand) {
+            // Handle brand object or string
+            formData.append("brand", typeof newProductVarient.brand === 'object' ? newProductVarient.brand._id || newProductVarient.brand : newProductVarient.brand);
         }
-        const currency = newProductVarient.priceCurrency || newProductVarient.price?.currency;
-        if (currency) {
-            formData.append("priceCurrency", currency);
+        if (newProductVarient.seller) {
+            formData.append("seller", typeof newProductVarient.seller === 'object' ? newProductVarient.seller._id || newProductVarient.seller : newProductVarient.seller);
+        }
+        if (newProductVarient.priceCurrency) {
+            formData.append("priceCurrency", newProductVarient.priceCurrency);
+        } else if (newProductVarient.price?.currency) {
+            formData.append("priceCurrency", newProductVarient.price.currency);
         }
 
         const response = await productApi.post(`/${ProductId}/variants`, formData);
@@ -77,4 +89,3 @@ export const addVariant = async (ProductId, newProductVarient) => {
         throw error;
     }
 }
-

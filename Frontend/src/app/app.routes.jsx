@@ -7,10 +7,15 @@ import Protected from "../features/auth/components/Protected";
 import Home from "../features/products/pages/Home";
 import ProductDetail from "../features/products/pages/ProductDetail";
 import SellerProductDetail from "../features/products/pages/SellerProductDetail";
+import LandingPage from "../features/products/pages/LandingPage";
 
 export const routes = createBrowserRouter([
     {
         path: "/",
+        element: <LandingPage />
+    },
+    {
+        path: "/home",
         element: <Home />
     },
     {

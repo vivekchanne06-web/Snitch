@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -162,6 +162,282 @@ const formatPrice = (price) => {
     : price.currency === "USD" ? "$"
     : (price.currency || "") + " ";
   return sym + Number(price.amount).toLocaleString("en-IN");
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   VARIANT SELECTOR
+   Groups variant attributes into premium full-width dropdowns.
+   Handles availability cascading so no impossible combination is selectable.
+   ══════════════════════════════════════════════════════════════════ */
+const VariantSelector = ({ variants, selectedVariant, onVariantChange }) => {
+  const safeVariants = variants || [];
+  if (safeVariants.length === 0) return null;
+
+  /* ── Collect all unique attribute keys across all variants ─── */
+  const attrKeys = useMemo(() => {
+    const keys = new Set();
+    safeVariants.forEach((v) => {
+      if (v.attributes) Object.keys(v.attributes).forEach((k) => keys.add(k));
+    });
+    return [...keys];
+  }, [safeVariants]);
+
+  /* ── Current selections (derived from selectedVariant) ───────── */
+  const currentAttrs = useMemo(
+    () => selectedVariant?.attributes || {},
+    [selectedVariant]
+  );
+
+  /* ── Given current selections, find all variants still reachable
+       after locking the keys already set BEFORE `changedKey` ───── */
+  const getAvailableValues = useCallback(
+    (keyToQuery, lockedSelections) => {
+      const reachable = safeVariants.filter((v) => {
+        if (!v.attributes) return false;
+        return Object.entries(lockedSelections).every(
+          ([k, val]) => String(v.attributes[k] ?? "") === String(val)
+        );
+      });
+      const vals = new Set();
+      reachable.forEach((v) => {
+        const val = v.attributes?.[keyToQuery];
+        if (val !== undefined) vals.add(String(val));
+      });
+      return [...vals];
+    },
+    [safeVariants]
+  );
+
+  /* ── Stock status label ─────────────────────────────────────── */
+  const stockStatus = useMemo(() => {
+    if (!selectedVariant) return null;
+    const s = selectedVariant.stock ?? 0;
+    if (s === 0) return { label: "Out of Stock", color: "#D32F2F", bg: "rgba(211,47,47,0.08)" };
+    if (s <= 5) return { label: `Low Stock — ${s} left`, color: "#B45309", bg: "rgba(180,83,9,0.08)" };
+    return { label: `In Stock — ${s} available`, color: "#2E7D32", bg: "rgba(46,125,50,0.08)" };
+  }, [selectedVariant]);
+
+  /* ── Handle a dropdown change ───────────────────────────────── */
+  const handleChange = useCallback(
+    (changedKey, newVal) => {
+      /* Build the new selection by updating the changed key */
+      const next = { ...currentAttrs, [changedKey]: newVal };
+
+      /* Find exact matching variant or closest match */
+      const exact = safeVariants.find((v) =>
+        attrKeys.every(
+          (k) => String(v.attributes?.[k] ?? "") === String(next[k] ?? "")
+        )
+      );
+
+      if (exact) {
+        onVariantChange(exact);
+        return;
+      }
+
+      /* No exact match — find best partial match (most keys matching) */
+      const candidates = safeVariants.filter(
+        (v) => String(v.attributes?.[changedKey] ?? "") === String(newVal)
+      );
+      if (candidates.length > 0) {
+        onVariantChange(candidates[0]);
+      }
+    },
+    [currentAttrs, safeVariants, attrKeys, onVariantChange]
+  );
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "14px",
+        width: "100%",
+      }}
+    >
+      {/* Section label */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <p
+          style={{
+            fontSize: "10px",
+            fontWeight: 700,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: C.input,
+            margin: 0,
+          }}
+        >
+          Select Options
+        </p>
+        {selectedVariant?.sku && (
+          <span
+            style={{
+              fontSize: "10px",
+              fontWeight: 600,
+              color: C.muted,
+              letterSpacing: "0.06em",
+            }}
+          >
+            SKU: {selectedVariant.sku}
+          </span>
+        )}
+      </div>
+
+      {/* One full-width dropdown per attribute key */}
+      {attrKeys.map((attrKey, keyIdx) => {
+        /* Selections locked BEFORE this key in order */
+        const locked = {};
+        attrKeys.slice(0, keyIdx).forEach((k) => {
+          if (currentAttrs[k]) locked[k] = currentAttrs[k];
+        });
+        const available = getAvailableValues(attrKey, locked);
+        const currentVal = String(currentAttrs[attrKey] ?? "");
+
+        return (
+          <div key={attrKey} style={{ width: "100%" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "7px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: C.text,
+                }}
+              >
+                {attrKey}
+              </span>
+              {currentVal && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: C.primary,
+                  }}
+                >
+                  {currentVal}
+                </span>
+              )}
+            </label>
+
+            {/* Premium select — full width, consistent with design tokens */}
+            <div style={{ position: "relative", width: "100%" }}>
+              <select
+                value={currentVal}
+                onChange={(e) => handleChange(attrKey, e.target.value)}
+                style={{
+                  width: "100%",
+                  height: "46px",
+                  padding: "0 42px 0 16px",
+                  borderRadius: "8px",
+                  border: `1.5px solid ${C.border}`,
+                  background: C.white,
+                  color: currentVal ? C.text : C.input,
+                  fontSize: "13.5px",
+                  fontWeight: 600,
+                  fontFamily: '"Outfit", sans-serif',
+                  outline: "none",
+                  cursor: "pointer",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  MozAppearance: "none",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = C.primary;
+                  e.target.style.boxShadow = `0 0 0 3px rgba(169,90,58,0.12)`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = C.border;
+                  e.target.style.boxShadow = "none";
+                }}
+              >
+                <option value="" disabled>
+                  Select {attrKey}
+                </option>
+                {available.map((val) => (
+                  <option key={val} value={val}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+
+              {/* Custom chevron icon */}
+              <svg
+                style={{
+                  position: "absolute",
+                  right: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                  color: C.muted,
+                }}
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Stock status pill */}
+      {stockStatus && (
+        <motion.div
+          key={stockStatus.label}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "6px 14px",
+            borderRadius: "99px",
+            background: stockStatus.bg,
+            border: `1px solid ${stockStatus.color}22`,
+            fontSize: "11.5px",
+            fontWeight: 700,
+            color: stockStatus.color,
+            letterSpacing: "0.04em",
+            alignSelf: "flex-start",
+          }}
+        >
+          <span
+            style={{
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              background: stockStatus.color,
+              flexShrink: 0,
+            }}
+          />
+          {stockStatus.label}
+        </motion.div>
+      )}
+    </div>
+  );
 };
 
 /* ══════════════════════════════════════════════════════════════════
@@ -691,10 +967,16 @@ const HIGHLIGHTS = [
   { icon: <RotateCcw size={13} />, label: "Easy Returns" },
 ];
 
-const ProductInfoPanel = ({ product }) => {
+const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
   const [wishlisted, setWishlisted] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  /* Derive display price — selected variant overrides base product price */
+  const displayPrice = useMemo(
+    () => selectedVariant?.price || product?.price,
+    [selectedVariant, product]
+  );
 
   const handleWishlist = () => {
     setWishlisted((p) => !p);
@@ -776,19 +1058,24 @@ const ProductInfoPanel = ({ product }) => {
         {product.title}
       </h1>
 
-      {/* 3. Price (Tightly connected to Title) */}
+      {/* 3. Price — shows selected variant price or base product price */}
       <div>
-        <span
+        <motion.span
+          key={displayPrice?.amount}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }}
           style={{
             fontFamily: '"Outfit", sans-serif',
             fontSize: "clamp(1.5rem, 2.6vw, 1.9rem)",
             fontWeight: 700,
             color: C.primary,
             letterSpacing: "0.01em",
+            display: "inline-block",
           }}
         >
-          {formatPrice(product.price)}
-        </span>
+          {formatPrice(displayPrice)}
+        </motion.span>
         <span
           style={{
             marginLeft: "10px",
@@ -802,6 +1089,19 @@ const ProductInfoPanel = ({ product }) => {
       </div>
 
       <div style={{ height: "1px", background: `linear-gradient(to right, ${C.border} 0%, transparent 85%)` }} />
+
+      {/* 4a. Variant Selector — appears between price and description */}
+      {product.variants && product.variants.length > 0 && (
+        <VariantSelector
+          variants={product.variants}
+          selectedVariant={selectedVariant}
+          onVariantChange={onVariantChange}
+        />
+      )}
+
+      {product.variants && product.variants.length > 0 && (
+        <div style={{ height: "1px", background: `linear-gradient(to right, ${C.border} 0%, transparent 85%)` }} />
+      )}
 
       {/* 4. Description (Compact) */}
       <div
@@ -1344,7 +1644,23 @@ const ProductDetail = () => {
   const [notFound, setNotFound] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const { handleGetProductDetail } = useProduct();
+
+  /* Auto-select first variant when product loads */
+  useEffect(() => {
+    if (product?.variants?.length > 0) {
+      setSelectedVariant(product.variants[0]);
+    } else {
+      setSelectedVariant(null);
+    }
+  }, [product]);
+
+  /* Gallery images — use selected variant images if available */
+  const galleryImages = useMemo(() => {
+    if (selectedVariant?.images?.length > 0) return selectedVariant.images;
+    return product?.images || [];
+  }, [selectedVariant, product]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1457,12 +1773,16 @@ const ProductDetail = () => {
                   >
                     {/* ── LEFT (55%): Sticky Image Gallery ────────── */}
                     <div className="product-gallery-column">
-                      <ImageGallery images={product.images || []} />
+                      <ImageGallery images={galleryImages} />
                     </div>
 
                     {/* ── RIGHT (45%): Compact Product Info ───── */}
                     <div className="product-info-column">
-                      <ProductInfoPanel product={product} />
+                      <ProductInfoPanel
+                        product={product}
+                        selectedVariant={selectedVariant}
+                        onVariantChange={setSelectedVariant}
+                      />
                     </div>
                   </div>
                 </div>
