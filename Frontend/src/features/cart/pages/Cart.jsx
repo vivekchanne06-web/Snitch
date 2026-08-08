@@ -437,7 +437,7 @@ const CartItemRow = ({
 
             <button
               className="remove-btn"
-              onClick={() => onRemove(item._id)}
+              onClick={() => onRemove(item.product._id, item.variant)}
               aria-label={`Remove ${product?.title} from cart`}
             >
               <Trash2 size={12} />

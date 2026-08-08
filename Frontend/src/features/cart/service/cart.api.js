@@ -24,10 +24,13 @@ export const incrementQuantityInCart = async({productId, variantId})=>{
     return response.data
 
 }
-
 export const decrementQuantityInCart = async({productId, variantId})=>{
 
     const response = await cartApi.patch(`/quantity/decrease/${productId}/${variantId}`);
     return response.data
+}
 
+export const removeItemFromCart = async ({ productId, variantId }) => {
+    const response = await cartApi.delete(`/remove/${productId}/${variantId}`);
+    return response.data
 }

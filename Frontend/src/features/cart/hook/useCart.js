@@ -1,6 +1,6 @@
-import { addItemInCart, getCartDetails,incrementQuantityInCart,decrementQuantityInCart } from "../service/cart.api"
+import { addItemInCart, getCartDetails,incrementQuantityInCart,decrementQuantityInCart,removeItemFromCart } from "../service/cart.api"
 import { useDispatch } from "react-redux"
-import { setCart, incrementQuantity, decrementQuantity } from "../state/cart.slice"
+import { setCart, incrementQuantity, decrementQuantity,removeItem } from "../state/cart.slice"
 
 export const useCart = () => {
 
@@ -56,11 +56,26 @@ export const useCart = () => {
         }
     }
 
+    async function handleRemoveFromCart(productId, variantId) {
+        try {
+            const data = await removeItemFromCart({ productId, variantId });
+            if(data.success){
+                dispatch(removeItem({ productId, variantId }));
+                console.log("Item removed successfully");
+            }else{
+                console.error(data.message);
+            }
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
+    }
+
     return {
         handleAddToCart,
         handleGetCart,
         handleIncrement,
-        handleDecrement
+        handleDecrement,
+        handleRemoveFromCart 
     }
 
 
