@@ -89,3 +89,64 @@ export const addVariant = async (ProductId, newProductVarient) => {
         throw error;
     }
 }
+
+export const deleteProduct = async (ProductId) => {
+    try {
+        const response = await productApi.delete(`/${ProductId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const updateVarient = async (ProductId, VariantId, updateVariant) => {
+    try {
+        const formData = new FormData()
+        if (updateVariant.price?.amount !== undefined) {
+            formData.append("priceAmount", updateVariant.price.amount);
+        }
+        if (updateVariant.price?.currency !== undefined) {
+            formData.append("priceCurrency", updateVariant.price.currency);
+        }
+        if (updateVariant.stock !== undefined) {
+            formData.append("stock", updateVariant.stock);
+        }
+        if (updateVariant.attributes !== undefined) {
+            formData.append("attributes", JSON.stringify(updateVariant.attributes));
+        }
+        if (updateVariant.existingImages !== undefined) {
+            formData.append(
+                "existingImages",
+                JSON.stringify(updateVariant.existingImages)
+            );
+        }
+        if (updateVariant.images) {
+            updateVariant.images.forEach((image) => {
+                const file = image?.file || image;
+
+                if (file instanceof File) {
+                    formData.append("images", file);
+                }
+            });
+        }
+        const response = await productApi.patch(
+            `/${ProductId}/variants/${VariantId}`,
+            formData
+        );
+
+        return response.data;
+
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const deleteVariant = async (ProductId, VariantId) => {
+    try {
+        const response = await productApi.delete(`/${ProductId}/variants/${VariantId}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

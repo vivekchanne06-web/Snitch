@@ -33,19 +33,19 @@ import SuccessToast from "../components/SuccessToast";
    DESIGN TOKENS — exact palette, typography & shadows
    ══════════════════════════════════════════════════════════════════ */
 const C = {
-  bg:          "#FAF9F5",
-  card:        "#F5F4EF",
-  white:       "#FFFFFF",
-  primary:     "#A95A3A",
-  primaryDk:   "#8B4A2F",
-  text:        "#3D3929",
-  muted:       "#6E6D68",
-  border:      "#DAD9D4",
-  input:       "#B4B2A7",
-  secondary:   "#E9E6DC",
-  dark:        "#1E1912",
-  success:     "#2E7D32",
-  error:       "#D32F2F",
+  bg: "#FAF9F5",
+  card: "#F5F4EF",
+  white: "#FFFFFF",
+  primary: "#A95A3A",
+  primaryDk: "#8B4A2F",
+  text: "#3D3929",
+  muted: "#6E6D68",
+  border: "#DAD9D4",
+  input: "#B4B2A7",
+  secondary: "#E9E6DC",
+  dark: "#1E1912",
+  success: "#2E7D32",
+  error: "#D32F2F",
 };
 
 /* ── Keyframes (shimmer, heart beat bounce) ─────────────────────── */
@@ -159,8 +159,8 @@ const formatPrice = (price) => {
   if (!price) return "";
   const sym =
     price.currency === "INR" ? "₹"
-    : price.currency === "USD" ? "$"
-    : (price.currency || "") + " ";
+      : price.currency === "USD" ? "$"
+        : (price.currency || "") + " ";
   return sym + Number(price.amount).toLocaleString("en-IN");
 };
 
@@ -168,7 +168,7 @@ const formatPrice = (price) => {
 
 /* ══════════════════════════════════════════════════════════════════
    STICKY IMAGE GALLERY & TRANSITIONS — Immersive Full Image Fit
-   ══════════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════dele═══ */
 const ImageGallery = ({ images }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState({});
@@ -722,8 +722,13 @@ const SellerProductInfo = ({ product }) => {
 /* ══════════════════════════════════════════════════════════════════
    EXISTING VARIANTS SECTION
    ══════════════════════════════════════════════════════════════════ */
-const ExistingVariants = ({ variants }) => {
-  const safeVariants = variants || [];
+const ExistingVariants = ({
+  product,
+  onDeleteVariant,
+  onEditVariant,
+}) => {
+  const safeVariants = product?.variants || [];
+
 
   return (
     <div style={{ marginTop: "32px" }}>
@@ -782,8 +787,8 @@ const ExistingVariants = ({ variants }) => {
               variant.price?.amount !== undefined
                 ? variant.price.amount
                 : typeof variant.price === "number"
-                ? variant.price
-                : variant.priceAmount || "";
+                  ? variant.price
+                  : variant.priceAmount || "";
 
             return (
               <motion.div
@@ -901,7 +906,7 @@ const ExistingVariants = ({ variants }) => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => alert("Edit Variant feature coming soon")}
+                      onClick={() => onEditVariant(variant)}
                       style={{
                         padding: "6px 12px",
                         background: C.bg,
@@ -920,7 +925,7 @@ const ExistingVariants = ({ variants }) => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => alert("Delete Variant feature coming soon")}
+                      onClick={() => onDeleteVariant(product._id, variant._id)}
                       style={{
                         padding: "6px 12px",
                         background: "rgba(211,47,47,0.06)",
@@ -984,7 +989,9 @@ const ExistingVariants = ({ variants }) => {
    ADD NEW VARIANT FORM
    ══════════════════════════════════════════════════════════════════ */
 const AddVariantForm = ({ productId, product, onSuccess, onCancel }) => {
-  const { handleAddProductVarient } = useProduct();
+  const { handleAddProductVarient,
+    handleupdateProductVarient,
+    handleProductVarientDelete, } = useProduct();
   const fileInputRef = useRef(null);
 
   /* Form State */
@@ -1013,7 +1020,7 @@ const AddVariantForm = ({ productId, product, onSuccess, onCancel }) => {
   const handleImageFiles = (files) => {
     setErrorMsg("");
     const validFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
-    
+
     if (validFiles.length === 0) return;
 
     if (images.length + validFiles.length > 7) {
@@ -1616,6 +1623,753 @@ const AddVariantForm = ({ productId, product, onSuccess, onCancel }) => {
   );
 };
 
+/* ══════════════════════════════════════════════════════════════════
+   EDIT VARIANT MODAL
+   ══════════════════════════════════════════════════════════════════ */
+const EditVariantModal = ({ productId, product, variant, onClose }) => {
+  const { handleupdateProductVarient } = useProduct();
+  const fileInputRef = useRef(null);
+
+  /* Pre-fill Form State */
+  const initialPrice =
+    variant?.price?.amount !== undefined
+      ? variant.price.amount
+      : typeof variant?.price === "number"
+      ? variant.price
+      : variant?.priceAmount || "";
+
+  const initialCurrency =
+    variant?.price?.currency || variant?.priceCurrency || product?.price?.currency || "INR";
+
+  const initialStock = variant?.stock !== undefined ? variant.stock : "";
+
+  const initialAttributes = variant?.attributes
+    ? Object.entries(variant.attributes).map(([key, value]) => ({ key, value: String(value) }))
+    : [];
+
+  const initialExistingImages = (variant?.images || []).map((img) => ({
+    url: typeof img === "string" ? img : img.url || "",
+    original: img,
+  }));
+
+  const [existingImages, setExistingImages] = useState(initialExistingImages);
+  const [newImages, setNewImages] = useState([]); // [{ file: File, url: string }]
+  const [price, setPrice] = useState(initialPrice);
+  const [currency, setCurrency] = useState(initialCurrency);
+  const [stock, setStock] = useState(initialStock);
+  const [attributeRows, setAttributeRows] = useState(
+    initialAttributes.length > 0 ? initialAttributes : [{ key: "", value: "" }]
+  );
+
+  const [dragActive, setDragActive] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  /* Cleanup preview ObjectURLs on unmount */
+  useEffect(() => {
+    return () => {
+      newImages.forEach((img) => URL.revokeObjectURL(img.url));
+    };
+  }, [newImages]);
+
+  const totalImagesCount = existingImages.length + newImages.length;
+
+  /* Handle image selection */
+  const handleImageFiles = (files) => {
+    setErrorMsg("");
+    const validFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+
+    if (validFiles.length === 0) return;
+
+    if (totalImagesCount + validFiles.length > 7) {
+      setErrorMsg("Maximum 7 images allowed for a variant");
+      return;
+    }
+
+    const newPreviews = validFiles.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setNewImages((prev) => [...prev, ...newPreviews].slice(0, 7 - existingImages.length));
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleImageFiles(e.dataTransfer.files);
+    }
+  };
+
+  const removeExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index) => {
+    setNewImages((prev) => {
+      const target = prev[index];
+      if (target?.url) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  /* Attribute rows management */
+  const addAttributeRow = () => {
+    setAttributeRows((prev) => [...prev, { key: "", value: "" }]);
+  };
+
+  const updateAttributeRow = (index, field, val) => {
+    setAttributeRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: val } : row))
+    );
+  };
+
+  const removeAttributeRow = (index) => {
+    setAttributeRows((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /* Validation rules */
+  const isImagesValid = totalImagesCount >= 1 && totalImagesCount <= 7;
+  const isPriceValid = price !== "" && !isNaN(Number(price)) && Number(price) > 0;
+  const isStockValid = stock !== "" && !isNaN(Number(stock)) && Number(stock) >= 0;
+  const isAttributesValid =
+    attributeRows.length >= 1 &&
+    attributeRows.every((row) => row.key.trim() !== "" && row.value.trim() !== "");
+
+  const isFormValid = isImagesValid && isPriceValid && isStockValid && isAttributesValid;
+
+  /* Handle Form Submit */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isFormValid || submitting) return;
+
+    setSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      const attributesObj = {};
+      attributeRows.forEach((row) => {
+        const k = row.key.trim();
+        const v = row.value.trim();
+        if (k && v) {
+          attributesObj[k] = v;
+        }
+      });
+
+      const remainingExisting = existingImages.map((img) => img.url);
+      const newFiles = newImages.map((img) => img.file);
+
+      const updatedVariantData = {
+        price: {
+          amount: Number(price),
+          currency: currency || "INR",
+        },
+        stock: Number(stock),
+        attributes: attributesObj,
+        existingImages: remainingExisting,
+        images: newFiles,
+      };
+
+      await handleupdateProductVarient(productId, variant._id, updatedVariantData);
+
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(
+        err.response?.data?.message || err.message || "Failed to update variant. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+        background: "rgba(30, 25, 18, 0.55)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background: C.white,
+          border: `1px solid ${C.border}`,
+          borderRadius: "16px",
+          width: "100%",
+          maxWidth: "640px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          padding: "clamp(20px, 3vw, 28px)",
+          boxShadow: "0 16px 48px rgba(61,57,41,0.2)",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+            paddingBottom: "14px",
+            borderBottom: `1px solid ${C.border}`,
+          }}
+        >
+          <div>
+            <h2
+              style={{
+                fontFamily: '"Playfair Display", Georgia, serif',
+                fontSize: "1.4rem",
+                fontWeight: 600,
+                color: C.text,
+                margin: 0,
+              }}
+            >
+              Edit Variant
+            </h2>
+            <p style={{ fontSize: "12px", color: C.muted, margin: "3px 0 0" }}>
+              Update variant pricing, stock inventory, attributes, and images
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: C.card,
+              border: `1px solid ${C.border}`,
+              color: C.text,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Error Notification */}
+        <AnimatePresence>
+          {errorMsg && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{
+                background: "rgba(211,47,47,0.08)",
+                border: `1px solid ${C.error}`,
+                borderRadius: "10px",
+                padding: "12px 16px",
+                marginBottom: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                color: C.error,
+                fontSize: "13px",
+                fontWeight: 600,
+              }}
+            >
+              <AlertCircle size={18} />
+              {errorMsg}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          {/* ── FIELD 1: Images ────────────────────────────────────── */}
+          <div>
+            <label
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: C.text,
+                display: "block",
+                marginBottom: "8px",
+              }}
+            >
+              Variant Images <span style={{ color: C.primary }}>* (Max 7)</span>
+            </label>
+
+            {/* Drag and Drop Zone */}
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: dragActive ? `2px dashed ${C.primary}` : `2px dashed ${C.border}`,
+                background: dragActive ? "rgba(169,90,58,0.04)" : C.card,
+                borderRadius: "12px",
+                padding: "20px 16px",
+                textAlign: "center",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => handleImageFiles(e.target.files)}
+              />
+              <Upload size={22} color={C.primary} style={{ marginBottom: "6px" }} />
+              <p style={{ fontSize: "13px", fontWeight: 600, color: C.text, margin: "0 0 4px" }}>
+                Click to upload or drag & drop new images
+              </p>
+              <p style={{ fontSize: "11px", color: C.muted, margin: 0 }}>
+                PNG, JPG, WEBP ({totalImagesCount}/7 total images)
+              </p>
+            </div>
+
+            {/* Image Previews (Existing + New) */}
+            {totalImagesCount > 0 && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))",
+                  gap: "10px",
+                  marginTop: "12px",
+                }}
+              >
+                {/* Existing Images */}
+                {existingImages.map((img, i) => (
+                  <div
+                    key={`existing-${i}`}
+                    style={{
+                      position: "relative",
+                      aspectRatio: "4/5",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      background: C.secondary,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <img
+                      src={img.url}
+                      alt={`Existing image ${i + 1}`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeExistingImage(i);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "4px",
+                        right: "4px",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: "rgba(20,17,12,0.75)",
+                        color: "#FFFFFF",
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "4px",
+                        left: "4px",
+                        fontSize: "8px",
+                        fontWeight: 700,
+                        color: "#FFFFFF",
+                        background: C.dark,
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Saved
+                    </span>
+                  </div>
+                ))}
+
+                {/* New Uploaded Images */}
+                {newImages.map((img, i) => (
+                  <div
+                    key={`new-${i}`}
+                    style={{
+                      position: "relative",
+                      aspectRatio: "4/5",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      background: C.secondary,
+                      border: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <img
+                      src={img.url}
+                      alt={`New image ${i + 1}`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeNewImage(i);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: "4px",
+                        right: "4px",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: "rgba(20,17,12,0.75)",
+                        color: "#FFFFFF",
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                    <span
+                      style={{
+                        position: "absolute",
+                        bottom: "4px",
+                        left: "4px",
+                        fontSize: "8px",
+                        fontWeight: 700,
+                        color: "#FFFFFF",
+                        background: C.primary,
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      New
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── FIELD 2 & 3: Price & Stock ────────────────────────────── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            {/* Field 2: Price */}
+            <div>
+              <label
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: C.text,
+                  display: "block",
+                  marginBottom: "8px",
+                }}
+              >
+                Price ({currency === "INR" ? "₹" : currency}) <span style={{ color: C.primary }}>*</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                placeholder="Variant Price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                style={{
+                  width: "100%",
+                  height: "44px",
+                  padding: "0 14px",
+                  borderRadius: "8px",
+                  border: `1.5px solid ${C.border}`,
+                  background: C.bg,
+                  color: C.text,
+                  fontSize: "13px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = C.primary)}
+                onBlur={(e) => (e.target.style.borderColor = C.border)}
+              />
+            </div>
+
+            {/* Field 3: Stock */}
+            <div>
+              <label
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: C.text,
+                  display: "block",
+                  marginBottom: "8px",
+                }}
+              >
+                Stock <span style={{ color: C.primary }}>*</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                placeholder="Available Stock"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                style={{
+                  width: "100%",
+                  height: "44px",
+                  padding: "0 14px",
+                  borderRadius: "8px",
+                  border: `1.5px solid ${C.border}`,
+                  background: C.bg,
+                  color: C.text,
+                  fontSize: "13px",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
+                onFocus={(e) => (e.target.style.borderColor = C.primary)}
+                onBlur={(e) => (e.target.style.borderColor = C.border)}
+              />
+            </div>
+          </div>
+
+          {/* ── FIELD 4: Dynamic Attributes Builder ───────────────────── */}
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <label
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: C.text,
+                  margin: 0,
+                }}
+              >
+                Dynamic Attributes <span style={{ color: C.primary }}>*</span>
+              </label>
+              <button
+                type="button"
+                onClick={addAttributeRow}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: C.primary,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: 0,
+                }}
+              >
+                <Plus size={14} /> Add Attribute
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {attributeRows.map((row, idx) => (
+                <div key={idx} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    placeholder="Attribute Name (e.g. Size)"
+                    value={row.key}
+                    onChange={(e) => updateAttributeRow(idx, "key", e.target.value)}
+                    style={{
+                      flex: 1,
+                      height: "42px",
+                      padding: "0 12px",
+                      borderRadius: "8px",
+                      border: `1.5px solid ${C.border}`,
+                      background: C.bg,
+                      color: C.text,
+                      fontSize: "13px",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Attribute Value (e.g. XL)"
+                    value={row.value}
+                    onChange={(e) => updateAttributeRow(idx, "value", e.target.value)}
+                    style={{
+                      flex: 1,
+                      height: "42px",
+                      padding: "0 12px",
+                      borderRadius: "8px",
+                      border: `1.5px solid ${C.border}`,
+                      background: C.bg,
+                      color: C.text,
+                      fontSize: "13px",
+                      outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  {attributeRows.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeAttributeRow(idx)}
+                      style={{
+                        width: "36px",
+                        height: "42px",
+                        borderRadius: "8px",
+                        background: "rgba(211,47,47,0.06)",
+                        border: `1px solid rgba(211,47,47,0.2)`,
+                        color: C.error,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Validation Checklist / Inline Feedback */}
+          {!isFormValid && (
+            <div
+              style={{
+                fontSize: "11.5px",
+                color: C.muted,
+                background: C.card,
+                padding: "10px 14px",
+                borderRadius: "8px",
+              }}
+            >
+              <span style={{ fontWeight: 600, color: C.text }}>Required to submit:</span>
+              <ul style={{ margin: "4px 0 0", paddingLeft: "18px" }}>
+                {!isImagesValid && <li>At least 1 image remaining or uploaded (max 7)</li>}
+                {!isPriceValid && <li>Valid numeric variant price</li>}
+                {!isStockValid && <li>Valid available stock quantity</li>}
+                {!isAttributesValid && <li>At least 1 attribute with non-empty name and value</li>}
+              </ul>
+            </div>
+          )}
+
+          {/* ACTION BUTTONS: Cancel & Save Changes */}
+          <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+            <motion.button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                flex: 1,
+                height: "50px",
+                background: "transparent",
+                color: C.text,
+                border: `1.5px solid ${C.border}`,
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                transition: "all 0.2s ease",
+              }}
+            >
+              Cancel
+            </motion.button>
+
+            <motion.button
+              whileHover={isFormValid && !submitting ? { scale: 1.015, y: -1 } : {}}
+              whileTap={isFormValid && !submitting ? { scale: 0.98 } : {}}
+              type="submit"
+              disabled={!isFormValid || submitting}
+              style={{
+                flex: 2,
+                height: "50px",
+                background: isFormValid ? C.primary : C.border,
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "8px",
+                cursor: isFormValid && !submitting ? "pointer" : "not-allowed",
+                fontSize: "13px",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                boxShadow: isFormValid ? "0 6px 24px rgba(169,90,58,0.32)" : "none",
+                transition: "background 0.2s, box-shadow 0.2s, opacity 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+                opacity: isFormValid && !submitting ? 1 : 0.65,
+              }}
+            >
+              {submitting ? (
+                <>
+                  <Sparkles size={16} className="spin" />
+                  Updating Variant...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={16} />
+                  Save Changes
+                </>
+              )}
+            </motion.button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
+
 
 /* ══════════════════════════════════════════════════════════════════
    SKELETON & NOT FOUND STATES
@@ -1693,17 +2447,23 @@ const NotFoundState = () => {
    ══════════════════════════════════════════════════════════════════ */
 const SellerProductDetail = () => {
   const { productId } = useParams();
-  const [product, setProduct] = useState(null);
+  const product = useSelector((state) => state.product.currentProduct);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState(null);
 
   const formRef = useRef(null);
   const variantsRef = useRef(null);
 
-  const { handleGetProductDetail } = useProduct();
+  const {
+    handleGetProductDetail,
+    handleProductDelete,
+    handleProductVarientDelete,
+    handleupdateProductVarient,
+  } = useProduct();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1717,7 +2477,6 @@ const SellerProductDetail = () => {
     try {
       const data = await handleGetProductDetail(productId);
       if (data) {
-        setProduct(data);
         setNotFound(false);
       } else {
         setNotFound(true);
@@ -1755,6 +2514,25 @@ const SellerProductDetail = () => {
     setIsFormOpen(false);
     variantsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const handleEditVariant = (variant) => {
+    setEditingVariant(variant);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingVariant(null);
+  };
+
+  const handleDeleteVariant = async (productId, variantId) => {
+    try {
+      await handleProductVarientDelete(productId, variantId);
+    } catch (error) {
+      console.error(
+        error.response?.data?.message || error.message
+      );
+    }
+  };
+
 
   return (
     <motion.div
@@ -1886,7 +2664,11 @@ const SellerProductDetail = () => {
                 }}
               >
                 <div className="product-detail-shell">
-                  <ExistingVariants variants={product.variants || []} />
+                  <ExistingVariants
+                    product={product}
+                    onDeleteVariant={handleDeleteVariant}
+                    onEditVariant={handleEditVariant}
+                  />
                 </div>
               </div>
 
@@ -1972,6 +2754,18 @@ const SellerProductDetail = () => {
                   </AnimatePresence>
                 </div>
               </div>
+
+              {/* ══ EDIT VARIANT MODAL ═════════════════════════════════════ */}
+              <AnimatePresence>
+                {editingVariant && (
+                  <EditVariantModal
+                    productId={productId}
+                    product={product}
+                    variant={editingVariant}
+                    onClose={handleCloseEditModal}
+                  />
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
