@@ -167,7 +167,7 @@ const Navbar = () => {
           }}
         >
           {/* Cart Icon — shown only when route allows and user is not a seller */}
-          {showCart && (!user || user.role !== "seller") && (
+          {showCart && (!user || user.role !== "seller" || user.role !== "buyer") && (
             <motion.button
               whileHover={{ scale: 1.12, y: -1 }}
               whileTap={{ scale: 0.9 }}

@@ -63,6 +63,15 @@ const Login = () => {
   const { handleLogin } = useAuth();
   const { loading } = useSelector((state) => state.auth);
   const user = useSelector((state) => state.auth.user);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   /* ─── Auth guard: redirect already-authenticated users ────────── */
   if (user) {
@@ -85,16 +94,7 @@ const Login = () => {
     return role === "seller" ? "/seller/products" : "/home";
   };
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
 
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [serverError, setServerError] = useState("");
 
   /* Handle input change */
   const handleChange = (e) => {
