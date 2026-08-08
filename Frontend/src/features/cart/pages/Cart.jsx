@@ -18,15 +18,15 @@ import { useCart } from "../hook/useCart";
    DESIGN TOKENS — exact Snitch palette
    ══════════════════════════════════════════════════════════════════════ */
 const C = {
-  bg:        "var(--color-background)",
-  card:      "var(--color-card)",
-  white:     "var(--color-surface)",
-  primary:   "var(--color-primary)",
+  bg: "var(--color-background)",
+  card: "var(--color-card)",
+  white: "var(--color-surface)",
+  primary: "var(--color-primary)",
   primaryDk: "var(--color-primary-dark)",
-  text:      "var(--color-foreground)",
-  muted:     "var(--color-muted)",
-  border:    "var(--color-border)",
-  input:     "var(--color-input)",
+  text: "var(--color-foreground)",
+  muted: "var(--color-muted)",
+  border: "var(--color-border)",
+  input: "var(--color-input)",
   secondary: "var(--color-secondary)",
 };
 
@@ -203,183 +203,7 @@ const formatPrice = (amount, currency = "INR") => {
   return sym + Number(amount).toLocaleString("en-IN");
 };
 
-/* ══════════════════════════════════════════════════════════════════════
-   NAVBAR — consistent with ProductDetail.jsx
-   ══════════════════════════════════════════════════════════════════════ */
-const Navbar = () => {
-  const navigate = useNavigate();
-  const user = useSelector((s) => s.auth.user);
-  const cartItems = useSelector((s) => s.cart.items);
-  const [scrolled, setScrolled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    onScroll();
-    onResize();
-    window.addEventListener("scroll", onScroll);
-    window.addEventListener("resize", onResize);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-    };
-  }, []);
-
-  const initial = user?.name
-    ? user.name.charAt(0).toUpperCase()
-    : user?.email
-    ? user.email.charAt(0).toUpperCase()
-    : "U";
-
-  const totalCount = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-
-  return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "fixed",
-        top: 0, left: 0, right: 0,
-        zIndex: 100,
-        padding: "0 clamp(20px, 5vw, 64px)",
-        height: "72px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        transition: "background 0.35s ease, box-shadow 0.35s ease",
-        background: scrolled ? "rgba(250,249,245,0.96)" : "rgba(250,249,245,0.92)",
-        backdropFilter: "blur(14px)",
-        boxShadow: scrolled ? "0 1px 0 rgba(61,57,41,0.08)" : "0 1px 0 rgba(61,57,41,0.05)",
-      }}
-    >
-      {/* Brand Logo */}
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          fontFamily: '"Playfair Display", Georgia, serif',
-          fontSize: "1.5rem",
-          fontWeight: 600,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: "#3D3929",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          lineHeight: 1,
-        }}
-      >
-        Snitch<span style={{ color: "#A95A3A" }}>.</span>
-      </button>
-
-      {/* Center nav — desktop only */}
-      {!isMobile && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <button
-            onClick={() => navigate("/home")}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: "12px", fontWeight: 600, letterSpacing: "0.14em",
-              textTransform: "uppercase", color: "#3D3929",
-              transition: "color 0.2s ease", padding: 0,
-            }}
-            onMouseEnter={(e) => (e.target.style.color = "#A95A3A")}
-            onMouseLeave={(e) => (e.target.style.color = "#3D3929")}
-          >
-            Collections
-          </button>
-        </div>
-      )}
-
-      {/* Right actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        {/* Cart icon with badge */}
-        <motion.button
-          whileHover={{ scale: 1.12, y: -1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label={`Cart — ${totalCount} items`}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: "#A95A3A", display: "flex", alignItems: "center",
-            padding: "4px", position: "relative",
-          }}
-        >
-          <ShoppingBag size={20} />
-          <AnimatePresence>
-            {totalCount > 0 && (
-              <motion.span
-                key={totalCount}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.5, opacity: 0 }}
-                style={{
-                  position: "absolute",
-                  top: "-4px", right: "-5px",
-                  width: "16px", height: "16px",
-                  borderRadius: "50%",
-                  background: "#A95A3A",
-                  color: "#FFFFFF",
-                  fontSize: "9px", fontWeight: 700,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >
-                {totalCount > 9 ? "9+" : totalCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
-
-        {/* User avatar or sign-in */}
-        {user ? (
-          <motion.button
-            whileHover={{ scale: 1.06, y: -1 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => (user.role === "seller" ? navigate("/seller/products") : null)}
-            style={{
-              width: "36px", height: "36px",
-              borderRadius: "50%",
-              background: "#A95A3A", color: "#FFFFFF",
-              border: "2px solid #FFFFFF",
-              cursor: "pointer",
-              fontSize: "13px", fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              letterSpacing: "0.02em",
-            }}
-            title={user.name || user.email}
-          >
-            {initial}
-          </motion.button>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/login")}
-            style={{
-              height: "36px", padding: "0 20px",
-              background: "transparent", color: "#3D3929",
-              border: "1.5px solid #DAD9D4",
-              borderRadius: "99px",
-              cursor: "pointer", fontSize: "12px", fontWeight: 600,
-              letterSpacing: "0.08em", textTransform: "uppercase",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#A95A3A";
-              e.currentTarget.style.color = "#A95A3A";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#DAD9D4";
-              e.currentTarget.style.color = "#3D3929";
-            }}
-          >
-            Sign In
-          </motion.button>
-        )}
-      </div>
-    </motion.nav>
-  );
-};
 
 /* ══════════════════════════════════════════════════════════════════════
    QUANTITY CONTROL
@@ -441,12 +265,17 @@ const QuantityControl = ({ value, onDecrease, onIncrease, maxStock }) => {
 /* ══════════════════════════════════════════════════════════════════════
    CART ITEM ROW
    ══════════════════════════════════════════════════════════════════════ */
-const CartItemRow = ({ item, index, onRemove, onUpdateQuantity }) => {
+const CartItemRow = ({
+  item,
+  index,
+  onRemove,
+  onIncrement,
+  onDecrement }) => {
   const { product, quantity, price } = item;
 
   /* Resolve the selected variant */
   const selectedVariant = product?.variants?.find(
-    (v) => v._id === item.variant
+    (v) => v._id.toString() === item.variant.toString()
   );
 
   /* Variant images take priority over product images */
@@ -469,12 +298,14 @@ const CartItemRow = ({ item, index, onRemove, onUpdateQuantity }) => {
   const maxStock = selectedVariant?.stock;
 
   const handleDecrease = useCallback(() => {
-    if (quantity > 1) onUpdateQuantity(item._id, quantity - 1);
-  }, [quantity, item._id, onUpdateQuantity]);
+    if (quantity > 1) {
+      onDecrement(item.product._id, item.variant);
+    }
+  }, [quantity, item.product._id, item.variant, onDecrement]);
 
   const handleIncrease = useCallback(() => {
-    onUpdateQuantity(item._id, quantity + 1);
-  }, [quantity, item._id, onUpdateQuantity]);
+    onIncrement(item.product._id, item.variant);
+}, [item.product._id, item.variant, onIncrement]);
 
   return (
     <motion.div
@@ -1005,7 +836,7 @@ const CartSkeleton = () => (
    ══════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  const { handleGetCart, handleRemoveFromCart, handleUpdateQuantity } = useCart();
+  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
@@ -1041,8 +872,6 @@ const Cart = () => {
       `}</style>
 
       <div className="cart-shell">
-        <Navbar />
-
         <main className="cart-layout">
           {/* ── Page Header ───────────────────────────────────────── */}
           <motion.div
@@ -1128,7 +957,8 @@ const Cart = () => {
                       item={item}
                       index={index}
                       onRemove={handleRemoveFromCart}
-                      onUpdateQuantity={handleUpdateQuantity}
+                      onIncrement={handleIncrement}
+                      onDecrement={handleDecrement}
                     />
                   ))}
                 </AnimatePresence>

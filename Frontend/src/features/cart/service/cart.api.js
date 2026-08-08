@@ -17,3 +17,17 @@ export const getCartDetails = async () => {
     const response = await cartApi.get("/");
     return response.data
 }
+
+export const incrementQuantityInCart = async({productId, variantId})=>{
+
+    const response = await cartApi.patch(`/quantity/increase/${productId}/${variantId}`);
+    return response.data
+
+}
+
+export const decrementQuantityInCart = async({productId, variantId})=>{
+
+    const response = await cartApi.patch(`/quantity/decrease/${productId}/${variantId}`);
+    return response.data
+
+}

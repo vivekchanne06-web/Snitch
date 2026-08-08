@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, Phone, Lock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { useSelector } from "react-redux";
 
-import FloatingLabelInput from "../../../components/ui/FloatingLabelInput";
-import SellerCheckbox from "../../../components/ui/SellerCheckbox";
-import GoogleIcon from "../../../components/ui/GoogleIcon";
+import FloatingLabelInput from "../../../shared/components/FloatingLabelInput";
+import SellerCheckbox from "../../../shared/components/SellerCheckbox";
+import GoogleIcon from "../../../shared/components/GoogleIcon";
 import BrandingPanel from "../components/BrandingPanel";
 import { useAuth } from "../hook/useAuth";
 
@@ -105,6 +105,13 @@ const Register = () => {
   const navigate = useNavigate();
   const { handleRegister } = useAuth();
   const { loading } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
+
+  /* ─── Auth guard: redirect already-authenticated users ────────── */
+  if (user) {
+    const destination = user.role === "seller" ? "/seller/products" : "/home";
+    return <Navigate to={destination} replace />;
+  }
 
   const [form, setForm] = useState({
     fullName: "",
@@ -155,9 +162,9 @@ const Register = () => {
     setTouched({ fullName: true, email: true, contact: true, password: true });
     return Object.keys(newErrors).length === 0;
   };
-  
-  
-    
+
+
+
   /* Submit */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -168,7 +175,7 @@ const Register = () => {
       await handleRegister(form);
       setIsSuccess(true);
       setServerError("");
-      setTimeout(() => navigate("/"), 2200);
+      setTimeout(() => navigate("/home"), 2200);
     } catch (error) {
       setServerError(
         error?.message || "Something went wrong. Please try again."
@@ -194,7 +201,7 @@ const Register = () => {
           <div className="w-20 h-20 rounded-full bg-[#A95A3A] flex items-center justify-center shadow-lg shadow-[#A95A3A]/30">
             <CheckCircle2 className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-[#3D3929]" style={{fontFamily:'Playfair Display,Georgia,serif'}}>Account Created!</h2>
+          <h2 className="text-2xl font-bold text-[#3D3929]" style={{ fontFamily: 'Playfair Display,Georgia,serif' }}>Account Created!</h2>
           <p className="text-[#6E6D68] text-center text-sm max-w-xs">
             Welcome to Snitch Marketplace. Redirecting you to your dashboard…
           </p>
@@ -246,7 +253,7 @@ const Register = () => {
                 <path d="M3 7h18l-2 11H5L3 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-[#3D3929] tracking-[0.08em] uppercase" style={{fontFamily:'Outfit,sans-serif'}}>
+            <span className="text-xl font-bold text-[#3D3929] tracking-[0.08em] uppercase" style={{ fontFamily: 'Outfit,sans-serif' }}>
               Snitch<span className="text-[#A95A3A]">.</span>
             </span>
           </div>
@@ -260,7 +267,7 @@ const Register = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
                 className="text-2xl sm:text-[28px] font-normal text-[#3D3929] leading-tight"
-                style={{fontFamily:'Playfair Display,Georgia,serif'}}
+                style={{ fontFamily: 'Playfair Display,Georgia,serif' }}
               >
                 Create your account
               </motion.h1>
@@ -382,22 +389,20 @@ const Register = () => {
                         {[1, 2, 3, 4, 5].map((step) => (
                           <div
                             key={step}
-                            className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-                              step <= passwordStrength.score
-                                ? passwordStrength.color
-                                : "bg-slate-200"
-                            }`}
+                            className={`flex-1 h-1 rounded-full transition-all duration-300 ${step <= passwordStrength.score
+                              ? passwordStrength.color
+                              : "bg-slate-200"
+                              }`}
                           />
                         ))}
                       </div>
                       {passwordStrength.label && (
-                        <p className={`text-[11px] font-medium ${
-                          passwordStrength.score <= 2
-                            ? "text-rose-500"
-                            : passwordStrength.score === 3
-                              ? "text-amber-500"
-                              : "text-emerald-500"
-                        }`}>
+                        <p className={`text-[11px] font-medium ${passwordStrength.score <= 2
+                          ? "text-rose-500"
+                          : passwordStrength.score === 3
+                            ? "text-amber-500"
+                            : "text-emerald-500"
+                          }`}>
                           {passwordStrength.label} password
                         </p>
                       )}

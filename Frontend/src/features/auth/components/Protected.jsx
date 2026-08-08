@@ -1,15 +1,14 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import LoadingScreen from './LoadingScreen'
 
 
 const Protected = ({children, role}) => {
 
-
     const user = useSelector(state=>state.auth.user)
     const loading = useSelector(state=>state.auth.loading)
-
+    const location = useLocation()
 
 
     if(loading){
@@ -19,7 +18,9 @@ const Protected = ({children, role}) => {
     }
 
     if(!user){
-        return <Navigate to="/login" />
+        // Preserve the attempted destination so Login can redirect back
+        const redirectTo = encodeURIComponent(location.pathname + location.search)
+        return <Navigate to={`/login?redirect=${redirectTo}`} replace />
     }
 
     if (role && user.role !== role) {

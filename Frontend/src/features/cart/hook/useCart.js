@@ -1,6 +1,6 @@
-import { addItemInCart, getCartDetails } from "../service/cart.api"
+import { addItemInCart, getCartDetails,incrementQuantityInCart,decrementQuantityInCart } from "../service/cart.api"
 import { useDispatch } from "react-redux"
-import { setCart } from "../state/cart.slice"
+import { setCart, incrementQuantity, decrementQuantity } from "../state/cart.slice"
 
 export const useCart = () => {
 
@@ -27,9 +27,40 @@ export const useCart = () => {
         }
     }
 
+    async function handleIncrement(productId, variantId) {
+        try {
+            const data = await incrementQuantityInCart({ productId, variantId });
+            if(data.success){
+                dispatch(incrementQuantity({ productId, variantId }));
+                console.log("Item incremented successfully");
+            }else{
+                console.error(data.message);
+            }
+            
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
+    }
+
+    async function handleDecrement(productId, variantId) {
+        try {
+            const data = await decrementQuantityInCart({ productId, variantId });
+            if(data.success){
+                dispatch(decrementQuantity({ productId, variantId }));
+                console.log("Item decremented successfully");
+            }else{
+                console.error(data.message);
+            }
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
+    }
+
     return {
         handleAddToCart,
-        handleGetCart
+        handleGetCart,
+        handleIncrement,
+        handleDecrement
     }
 
 

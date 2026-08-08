@@ -9,16 +9,10 @@ import ProductDetail from "../features/products/pages/ProductDetail";
 import SellerProductDetail from "../features/products/pages/SellerProductDetail";
 import LandingPage from "../features/products/pages/LandingPage";
 import Cart from "../features/cart/pages/Cart";
+import NotFound from "../features/products/pages/NotFound";
+import AppLayout from "./AppLayout";
 
 export const routes = createBrowserRouter([
-    {
-        path: "/",
-        element: <LandingPage />
-    },
-    {
-        path: "/home",
-        element: <Home />
-    },
     {
         path: "/register",
         element: <Register />
@@ -28,36 +22,121 @@ export const routes = createBrowserRouter([
         element: <Login />
     },
     {
-        path: "/product/:ProductId",
-        element: <ProductDetail />
-    },
-    {
-        path: "/cart",
-        element: <Protected>
-            <Cart />
-        </Protected>
-    },
-    {
-        path: "/seller",
+        element: <AppLayout />,
         children: [
             {
-                path: "products",
-                element: <Protected role="seller">
-                    <Dashboard />
-                </Protected>,
-            }, 
-            {
-                path: "products/add",
-                element: <Protected role="seller">
-                    <AddProduct />
-                </Protected>,
+                path: "/",
+                element: <LandingPage />,
+                handle: {
+                    navbar: {
+                        navLinks: [{ label: "Shop", to: "/home" }],
+                        showCart: true
+                    }
+                }
             },
             {
-                path: "products/:productId",
-                element: <Protected role="seller">
-                    <SellerProductDetail />
-                </Protected>,
+                path: "/home",
+                element: <Home />,
+                handle: {
+                    navbar: {
+                        navLinks: [{ label: "Collections", to: "/home" }],
+                        showCart: true
+                    }
+                }
+            },
+            {
+                path: "/product/:ProductId",
+                element: <ProductDetail />,
+                handle: {
+                    navbar: {
+                        navLinks: [{ label: "Collections", to: "/home" }],
+                        showCart: true
+                    }
+                }
+            },
+            {
+                path: "/cart",
+                element: (
+                    <Protected>
+                        <Cart />
+                    </Protected>
+                ),
+                handle: {
+                    navbar: {
+                        navLinks: [{ label: "Continue Shopping", to: "/home" }],
+                        showCart: false
+                    }
+                }
+            },
+            {
+                path: "/seller",
+                children: [
+                    {
+                        path: "products",
+                        element: (
+                            <Protected role="seller">
+                                <Dashboard />
+                            </Protected>
+                        ),
+                        handle: {
+                            navbar: {
+                                navLinks: [
+                                    { label: "Shop", to: "/home" },
+                                    { label: "My Products", to: "/seller/products" },
+                                    { label: "Add Product", to: "/seller/products/add" }
+                                ],
+                                showCart: false
+                            }
+                        }
+                    },
+                    {
+                        path: "products/add",
+                        element: (
+                            <Protected role="seller">
+                                <AddProduct />
+                            </Protected>
+                        ),
+                        handle: {
+                            navbar: {
+                                navLinks: [
+                                    { label: "Shop", to: "/home" },
+                                    { label: "My Products", to: "/seller/products" },
+                                    { label: "Add Product", to: "/seller/products/add" }
+                                ],
+                                showCart: false
+                            }
+                        }
+                    },
+                    {
+                        path: "products/:productId",
+                        element: (
+                            <Protected role="seller">
+                                <SellerProductDetail />
+                            </Protected>
+                        ),
+                        handle: {
+                            navbar: {
+                                navLinks: [
+                                    { label: "Shop", to: "/home" },
+                                    { label: "My Products", to: "/seller/products" },
+                                    { label: "Add Product", to: "/seller/products/add" }
+                                ],
+                                showCart: false
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                path: "*",
+                element: <NotFound />,
+                handle: {
+                    navbar: {
+                        navLinks: [{ label: "Shop", to: "/home" }],
+                        showCart: true
+                    }
+                }
             }
-        ],
+        ]
     }
-])
+]);

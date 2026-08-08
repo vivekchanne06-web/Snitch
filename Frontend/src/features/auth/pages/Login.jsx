@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { useSelector } from "react-redux";
 
-import FloatingLabelInput from "../../../components/ui/FloatingLabelInput";
-import GoogleIcon from "../../../components/ui/GoogleIcon";
+import FloatingLabelInput from "../../../shared/components/FloatingLabelInput";
+import GoogleIcon from "../../../shared/components/GoogleIcon";
 import LoginBrandingPanel from "../components/LoginBrandingPanel";
 import { useAuth } from "../hook/useAuth";
 
@@ -59,8 +59,31 @@ const successVariants = {
 /* ─── Login Page ─────────────────────────────────────────────────────── */
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { handleLogin } = useAuth();
   const { loading } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
+
+  /* ─── Auth guard: redirect already-authenticated users ────────── */
+  if (user) {
+    const destination = user.role === "seller" ? "/seller/products" : "/home";
+    return <Navigate to={destination} replace />;
+  }
+
+  /* ─── Resolve safe post-login redirect destination ────────────── */
+  const getRedirectPath = (role) => {
+    const raw = new URLSearchParams(location.search).get("redirect");
+    if (raw) {
+      try {
+        const decoded = decodeURIComponent(raw);
+        // Only allow internal relative paths — block open redirects
+        if (/^\/((?!\/))[^\s]*$/.test(decoded)) return decoded;
+      } catch {
+        // Malformed — fall through to defaults
+      }
+    }
+    return role === "seller" ? "/seller/products" : "/home";
+  };
 
   const [form, setForm] = useState({
     email: "",
@@ -116,16 +139,12 @@ const Login = () => {
     if (!validateAll()) return;
 
     try {
-     const user = await handleLogin({ email: form.email, password: form.password });
+      const user = await handleLogin({ email: form.email, password: form.password });
       setIsSuccess(true);
       setServerError("");
-      if(user.role === "buyer"){
-        setTimeout(() => navigate("/"), 2200);
-      }
-      else if(user.role == "seller") {
-        setTimeout(() => navigate("/seller/products"), 2200);
-      }
-      
+      const destination = getRedirectPath(user.role);
+      setTimeout(() => navigate(destination, { replace: true }), 2200);
+
 
     } catch (error) {
       setServerError(

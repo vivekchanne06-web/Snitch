@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useProduct } from "../hook/useProduct";
 import { useCart } from "../../cart/hook/useCart";
+import AddToCartToast from "../components/AddToCartToast";
 
 /* ══════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact palette, typography & shadows
@@ -441,168 +442,7 @@ const VariantSelector = ({ variants, selectedVariant, onVariantChange }) => {
   );
 };
 
-/* ══════════════════════════════════════════════════════════════════
-   1. NAVBAR — 72px Fixed Height, Refined Actions
-   ══════════════════════════════════════════════════════════════════ */
-const Navbar = ({ scrolled }) => {
-  const navigate = useNavigate();
-  const user = useSelector((s) => s.auth.user);
-  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  const initial = user?.name
-    ? user.name.charAt(0).toUpperCase()
-    : user?.email
-    ? user.email.charAt(0).toUpperCase()
-    : "U";
-
-  return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "fixed",
-        top: 0, left: 0, right: 0,
-        zIndex: 100,
-        padding: "0 clamp(20px, 5vw, 64px)",
-        height: "72px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        transition: "background 0.35s ease, box-shadow 0.35s ease",
-        background: scrolled ? "rgba(250,249,245,0.96)" : "rgba(250,249,245,0.92)",
-        backdropFilter: "blur(14px)",
-        boxShadow: scrolled ? "0 1px 0 rgba(61,57,41,0.08)" : "0 1px 0 rgba(61,57,41,0.05)",
-      }}
-    >
-      {/* Brand Logo */}
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          fontFamily: '"Playfair Display", Georgia, serif',
-          fontSize: "1.5rem",
-          fontWeight: 600,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: C.text,
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          lineHeight: 1,
-        }}
-      >
-        Snitch<span style={{ color: C.primary }}>.</span>
-      </button>
-
-      {/* Navigation — Collections Only */}
-      {!isMobile && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <button
-            onClick={() => navigate("/")}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: "12px", fontWeight: 600, letterSpacing: "0.14em",
-              textTransform: "uppercase", color: C.text,
-              transition: "color 0.2s ease", padding: 0,
-            }}
-            onMouseEnter={(e) => (e.target.style.color = C.primary)}
-            onMouseLeave={(e) => (e.target.style.color = C.text)}
-          >
-            Collections
-          </button>
-        </div>
-      )}
-
-      {/* Right Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        {/* Wishlist Icon */}
-        <motion.button
-          whileHover={{ scale: 1.15, y: -1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Wishlist"
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: C.text, display: "flex", alignItems: "center",
-            padding: "4px", transition: "color 0.2s ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = C.primary)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = C.text)}
-        >
-        </motion.button>
-
-        {/* Cart Icon */}
-        <motion.button
-          whileHover={{ scale: 1.15, y: -1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Cart"
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: C.text, display: "flex", alignItems: "center",
-            padding: "4px", transition: "color 0.2s ease",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = C.primary)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = C.text)}
-        >
-          <ShoppingBag size={20} />
-        </motion.button>
-
-        {/* User Profile Avatar OR Login Button */}
-        {user ? (
-          <motion.button
-            whileHover={{ scale: 1.06, y: -1 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => (user.role === "seller" ? navigate("/seller/products") : null)}
-            style={{
-              width: "36px", height: "36px",
-              borderRadius: "50%",
-              background: C.primary, color: "#FFFFFF",
-              border: `2px solid ${C.white}`,
-              cursor: "pointer",
-              fontSize: "13px", fontWeight: 700,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              letterSpacing: "0.02em",
-            }}
-            title={user.name || user.email}
-          >
-            {initial}
-          </motion.button>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => navigate("/login")}
-            style={{
-              height: "36px", padding: "0 20px",
-              background: "transparent", color: C.text,
-              border: `1.5px solid ${C.border}`,
-              borderRadius: "99px",
-              cursor: "pointer", fontSize: "12px", fontWeight: 600,
-              letterSpacing: "0.08em", textTransform: "uppercase",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = C.primary;
-              e.currentTarget.style.color = C.primary;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = C.border;
-              e.currentTarget.style.color = C.text;
-            }}
-          >
-            Sign In
-          </motion.button>
-        )}
-      </div>
-    </motion.nav>
-  );
-};
 
 /* ══════════════════════════════════════════════════════════════════
    STICKY IMAGE GALLERY & TRANSITIONS — Immersive Full Image Fit
@@ -979,14 +819,36 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
   );
 
   const{handleAddToCart} = useCart();
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastSnapshot, setToastSnapshot] = useState(null);
 
-  const handleAddToCartProduct =async () => {
+  const handleAddToCartProduct = async () => {
     if (!selectedVariant) return;
 
-     await handleAddToCart(product._id, selectedVariant._id);
-     
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 1800);
+    try {
+      await handleAddToCart(product._id, selectedVariant._id);
+
+      // Build a frozen snapshot so the popup shows the correctly added item
+      // even if the user changes the variant selection afterward.
+      const variantImages =
+        selectedVariant.images?.length > 0
+          ? selectedVariant.images
+          : product.images || [];
+
+      setToastSnapshot({
+        productTitle: product.title,
+        price: selectedVariant.price || product.price,
+        variantImage: variantImages[0]?.url || variantImages[0] || null,
+        attributes: selectedVariant.attributes || {},
+      });
+      setToastOpen(true);
+
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 1800);
+    } catch (error) {
+      console.error("Add to cart failed:", error.response?.data?.message || error.message);
+      // Do NOT show the success toast — the API failed.
+    }
   };
 
   return (
@@ -1208,6 +1070,13 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
           )}
         </motion.button>
       </div>
+
+      {/* Add-to-Cart success toast — rendered outside the panel flow */}
+      <AddToCartToast
+        show={toastOpen}
+        onClose={() => setToastOpen(false)}
+        snapshot={toastSnapshot}
+      />
     </div>
   );
 };
@@ -1457,9 +1326,12 @@ const RelatedProducts = ({ currentId }) => {
 /* ══════════════════════════════════════════════════════════════════
    STICKY MOBILE BOTTOM ACTION BAR
    ══════════════════════════════════════════════════════════════════ */
-const MobileStickyBar = ({ product }) => {
+const MobileStickyBar = ({ product, selectedVariant }) => {
   const [addedToCart, setAddedToCart] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastSnapshot, setToastSnapshot] = useState(null);
+  const { handleAddToCart } = useCart();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -1470,52 +1342,87 @@ const MobileStickyBar = ({ product }) => {
 
   if (!isMobile) return null;
 
+  const handleMobileAddToCart = async () => {
+    if (!selectedVariant) return;
+    try {
+      await handleAddToCart(product._id, selectedVariant._id);
+
+      const variantImages =
+        selectedVariant.images?.length > 0
+          ? selectedVariant.images
+          : product.images || [];
+
+      setToastSnapshot({
+        productTitle: product.title,
+        price: selectedVariant.price || product.price,
+        variantImage: variantImages[0]?.url || variantImages[0] || null,
+        attributes: selectedVariant.attributes || {},
+      });
+      setToastOpen(true);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 1800);
+    } catch (error) {
+      console.error("Mobile add to cart failed:", error.response?.data?.message || error.message);
+    }
+  };
+
   return (
-    <motion.div
-      initial={{ y: 80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: "fixed", bottom: 0, left: 0, right: 0,
-        zIndex: 90,
-        background: "rgba(250,249,245,0.96)",
-        backdropFilter: "blur(14px)",
-        borderTop: `1px solid ${C.border}`,
-        padding: "12px 20px 20px",
-        display: "flex", gap: "10px",
-      }}
-    >
-      <motion.button
-        whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}
-        onClick={() => { setAddedToCart(true); setTimeout(() => setAddedToCart(false), 1800); }}
+    <>
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          flex: 1, height: "50px",
-          background: "transparent", color: C.text,
-          border: `1.5px solid ${C.border}`,
-          borderRadius: "8px", cursor: "pointer",
-          fontSize: "12px", fontWeight: 600,
-          letterSpacing: "0.06em", textTransform: "uppercase",
-          transition: "all 0.2s",
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          zIndex: 90,
+          background: "rgba(250,249,245,0.96)",
+          backdropFilter: "blur(14px)",
+          borderTop: `1px solid ${C.border}`,
+          padding: "12px 20px 20px",
+          display: "flex", gap: "10px",
         }}
       >
-        {addedToCart ? "Added ✓" : "Add to Cart"}
-      </motion.button>
-      <motion.button
-        whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}
-        style={{
-          flex: 1.5, height: "50px",
-          background: C.primary, color: "#FFFFFF",
-          border: "none", borderRadius: "8px",
-          cursor: "pointer", fontSize: "12px", fontWeight: 700,
-          letterSpacing: "0.08em", textTransform: "uppercase",
-          boxShadow: "0 4px 16px rgba(169,90,58,0.35)",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = C.primaryDk)}
-        onMouseLeave={(e) => (e.currentTarget.style.background = C.primary)}
-      >
-        Buy Now
-      </motion.button>
-    </motion.div>
+        <motion.button
+          whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}
+          onClick={handleMobileAddToCart}
+          disabled={!selectedVariant}
+          style={{
+            flex: 1, height: "50px",
+            background: addedToCart ? "rgba(169,90,58,0.06)" : "transparent",
+            color: addedToCart ? C.primary : C.text,
+            border: addedToCart ? `1.5px solid ${C.primary}` : `1.5px solid ${C.border}`,
+            borderRadius: "8px", cursor: selectedVariant ? "pointer" : "not-allowed",
+            fontSize: "12px", fontWeight: 600,
+            letterSpacing: "0.06em", textTransform: "uppercase",
+            transition: "all 0.2s",
+            opacity: selectedVariant ? 1 : 0.5,
+          }}
+        >
+          {addedToCart ? "Added ✓" : "Add to Cart"}
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}
+          style={{
+            flex: 1.5, height: "50px",
+            background: C.primary, color: "#FFFFFF",
+            border: "none", borderRadius: "8px",
+            cursor: "pointer", fontSize: "12px", fontWeight: 700,
+            letterSpacing: "0.08em", textTransform: "uppercase",
+            boxShadow: "0 4px 16px rgba(169,90,58,0.35)",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = C.primaryDk)}
+          onMouseLeave={(e) => (e.currentTarget.style.background = C.primary)}
+        >
+          Buy Now
+        </motion.button>
+      </motion.div>
+
+      <AddToCartToast
+        show={toastOpen}
+        onClose={() => setToastOpen(false)}
+        snapshot={toastSnapshot}
+      />
+    </>
   );
 };
 
@@ -1583,7 +1490,7 @@ const NotFoundState = () => {
       <motion.button
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.97 }}
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/home")}
         style={{
           height: "50px", padding: "0 36px",
           background: C.primary, color: "#FFFFFF",
@@ -1684,10 +1591,7 @@ const ProductDetail = () => {
     >
       <style>{SHIMMER_CSS}</style>
 
-      {/* 72px Fixed Navbar */}
-      <Navbar scrolled={scrolled} />
-
-      <main style={{ paddingTop: "72px" }}>
+      <main>
         <AnimatePresence mode="wait">
           {/* Loading Skeleton */}
           {loading && (
@@ -1772,8 +1676,8 @@ const ProductDetail = () => {
           )}
         </AnimatePresence>
 
-        {/* Sticky mobile bar */}
-        {!loading && product && <MobileStickyBar product={product} />}
+        {/* Sticky mobile bar — pass selectedVariant so it can call the real API */}
+        {!loading && product && <MobileStickyBar product={product} selectedVariant={selectedVariant} />}
       </main>
     </motion.div>
   );

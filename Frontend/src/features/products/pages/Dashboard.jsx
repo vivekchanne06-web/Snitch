@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
@@ -235,10 +235,10 @@ const ProductCard = ({ product, index, onDelete }) => {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Image container — 4:5 aspect ratio */}
-      <div 
-        onClick={()=>{navigate(`/seller/products/${product._id}`);}}
-      className="relative overflow-hidden" style={{ paddingBottom: "125%" }}>
-       
+      <div
+        onClick={() => { navigate(`/seller/products/${product._id}`); }}
+        className="relative overflow-hidden" style={{ paddingBottom: "125%" }}>
+
         {/* Slideshow / fallback */}
         <ProductImageSlideshow
           images={images}
@@ -475,13 +475,22 @@ const Dashboard = () => {
       setLoading(true);
       try {
         await handleGetSellerProducts();
-      } catch (_) {}
+      } catch (_) { }
       finally {
         if (!cancelled) setLoading(false);
       }
     };
     fetchProducts();
     return () => { cancelled = true; };
+  }, []);
+
+  const [scrolled, setScrolled] = useState(false);
+
+  /* Track scroll for navbar shadow */
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   /* Stats */

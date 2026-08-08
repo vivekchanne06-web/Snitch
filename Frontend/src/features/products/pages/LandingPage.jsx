@@ -1,8 +1,12 @@
-import React from 'react'
+import { Navigate } from 'react-router-dom'
 
+// The application's real entry point is /home (product listing).
+// This redirect ensures / always lands on the correct page.
 const LandingPage = () => {
   return (
-    <div>LandingPage</div>
+    <>
+      This is landing page
+    </>
   )
 }
 
