@@ -1,4 +1,6 @@
 import mangoose from 'mongoose';
+import priceSchema from './price.schema.js';
+
 
 const productSchema = new mangoose.Schema({
 
@@ -11,15 +13,8 @@ const productSchema = new mangoose.Schema({
         required: true,
     },
     price: {
-        amount: {
-            type: Number,
-            required: true,
-        },
-        currency: {
-            type: String,
-            enum: ["USD", "INR"],
-            default: "INR",
-        }
+       type: priceSchema,
+       required: true,
     },
     seller: {
         type: mangoose.Schema.Types.ObjectId,
@@ -51,15 +46,7 @@ const productSchema = new mangoose.Schema({
                 of: String,
             },
             price: {
-                amount: {
-                    type: Number,
-                    required: true,
-                },
-                currency: {
-                    type: String,
-                    enum: ["USD", "INR"],
-                    default: "INR", 
-                }
+                type: priceSchema,
             },
             
 

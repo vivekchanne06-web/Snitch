@@ -122,7 +122,7 @@ const Navbar = ({ scrolled, transparent = true }) => {
             alignItems: "center",
           }}
         >
-          <Heart size={20} />
+          
         </motion.button>
 
         <motion.button
@@ -404,88 +404,7 @@ const ProductCard = ({ product, index }) => {
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
                 style={{ display: "flex", gap: "8px", alignItems: "center", width: "100%" }}
-              >
-                {/* View Details */}
-                <motion.button
-                onClick={()=>navigate(`/product/${product._id}`)}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    flex: 1,
-                    height: "36px",
-                    background: "#FFFFFF",
-                    color: "#3D3929",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <Eye size={12} />
-                  View
-                </motion.button>
-
-                {/* Wishlist */}
-                <motion.button
-                  whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setWishlisted((p) => !p);
-                  }}
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    flexShrink: 0,
-                    background: wishlisted ? "#A95A3A" : "rgba(255,255,255,0.15)",
-                    border: wishlisted ? "none" : "1.5px solid rgba(255,255,255,0.35)",
-                    backdropFilter: "blur(4px)",
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  <Heart
-                    size={14}
-                    color="#FFFFFF"
-                    fill={wishlisted ? "#FFFFFF" : "none"}
-                  />
-                </motion.button>
-
-                {/* Add to Cart */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{
-                    flex: 1,
-                    height: "36px",
-                    background: "#A95A3A",
-                    color: "#FFFFFF",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    boxShadow: "0 4px 12px rgba(169,90,58,0.35)",
-                  }}
-                >
-                  <ShoppingBag size={12} />
-                  Add
-                </motion.button>
+              >                
               </motion.div>
             </motion.div>
           )}

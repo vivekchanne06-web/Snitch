@@ -16,6 +16,7 @@ import {
   Home as HomeIcon,
 } from "lucide-react";
 import { useProduct } from "../hook/useProduct";
+import { useCart } from "../../cart/hook/useCart";
 
 /* ══════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact palette, typography & shadows
@@ -534,7 +535,6 @@ const Navbar = ({ scrolled }) => {
           onMouseEnter={(e) => (e.currentTarget.style.color = C.primary)}
           onMouseLeave={(e) => (e.currentTarget.style.color = C.text)}
         >
-          <Heart size={20} />
         </motion.button>
 
         {/* Cart Icon */}
@@ -978,13 +978,13 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
     [selectedVariant, product]
   );
 
-  const handleWishlist = () => {
-    setWishlisted((p) => !p);
-    setHeartAnim(true);
-    setTimeout(() => setHeartAnim(false), 600);
-  };
+  const{handleAddToCart} = useCart();
 
-  const handleAddToCart = () => {
+  const handleAddToCartProduct =async () => {
+    if (!selectedVariant) return;
+
+     await handleAddToCart(product._id, selectedVariant._id);
+     
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 1800);
   };
@@ -1011,36 +1011,6 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
         >
           SNITCH
         </span>
-
-        {/* Favorite Heart Button */}
-        <motion.button
-          whileHover={{ y: -2, scale: 1.08 }}
-          whileTap={{ scale: 0.88 }}
-          onClick={handleWishlist}
-          aria-label="Add to Wishlist"
-          style={{
-            width: "40px", height: "40px",
-            borderRadius: "50%",
-            background: wishlisted ? C.primary : C.white,
-            border: wishlisted ? "none" : `1.5px solid ${C.border}`,
-            cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: wishlisted
-              ? "0 4px 16px rgba(169,90,58,0.32)"
-              : "0 2px 10px rgba(61,57,41,0.08)",
-            transition: "all 0.25s ease",
-          }}
-        >
-          <Heart
-            size={18}
-            color={wishlisted ? "#FFFFFF" : C.muted}
-            fill={wishlisted ? "#FFFFFF" : "none"}
-            style={{
-              animation: heartAnim ? "heartBeat 0.55s ease" : "none",
-              transition: "fill 0.22s ease",
-            }}
-          />
-        </motion.button>
       </div>
 
       {/* 2. Product Title (Compact gap to Price) */}
@@ -1197,7 +1167,7 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
         <motion.button
           whileHover={{ scale: 1.015, y: -1 }}
           whileTap={{ scale: 0.98 }}
-          onClick={handleAddToCart}
+          onClick={() => handleAddToCartProduct()}
           style={{
             width: "100%", height: "50px",
             background: addedToCart ? "rgba(169,90,58,0.06)" : "transparent",
