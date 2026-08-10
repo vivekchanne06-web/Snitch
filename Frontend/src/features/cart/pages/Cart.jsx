@@ -286,9 +286,18 @@ const CartItemRow = ({
   const primaryImage = images[0]?.url || null;
 
   /* Price: variant price > item price > product price */
-  const priceObj =
-    selectedVariant?.price || price || product?.price || { amount: 0, currency: "INR" };
-  const itemTotal = priceObj.amount * quantity;
+  // const priceObj =
+  //   selectedVariant?.price || price || product?.price || { amount: 0, currency: "INR" };
+  // const itemTotal = priceObj.amount * quantity;
+  const originalPrice = price?.amount || 0;
+  const currentPriceObj = selectedVariant?.price || product?.price || price || { amount: 0, currency: "INR" };
+  const currentPrice = currentPriceObj?.amount || 0;
+  const hasDiscount = currentPrice < originalPrice;
+
+  const discountPercent = hasDiscount && originalPrice > 0
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : 0;
+  const itemTotal = currentPrice * quantity
 
   /* Attributes */
   const attrs = selectedVariant?.attributes || {};
@@ -305,7 +314,7 @@ const CartItemRow = ({
 
   const handleIncrease = useCallback(() => {
     onIncrement(item.product._id, item.variant);
-}, [item.product._id, item.variant, onIncrement]);
+  }, [item.product._id, item.variant, onIncrement]);
 
   return (
     <motion.div
@@ -404,18 +413,61 @@ const CartItemRow = ({
           )}
 
           {/* Price */}
-          <p
+          {/* Price */}
+          <div
             style={{
-              margin: "4px 0 0",
-              fontFamily: "var(--font-sans)",
-              fontSize: "15px",
-              fontWeight: 700,
-              color: "var(--color-primary)",
-              letterSpacing: "0.02em",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexWrap: "wrap",
+              marginTop: "4px",
             }}
           >
-            {formatPrice(priceObj.amount, priceObj.currency)}
-          </p>
+            {/* Original price - only when price dropped */}
+            {hasDiscount && (
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "var(--color-muted)",
+                  textDecoration: "line-through",
+                  fontFamily: "var(--font-sans)",
+                  fontWeight: 500,
+                }}
+              >
+                {formatPrice(originalPrice, currentPriceObj.currency)}
+              </span>
+            )}
+
+            {/* Current price */}
+            <span
+              style={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "var(--color-primary)",
+                fontFamily: "var(--font-sans)",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {formatPrice(currentPrice, currentPriceObj.currency)}
+            </span>
+
+            {/* Discount */}
+            {hasDiscount && (
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#2E7D32",
+                  background: "rgba(46,125,50,0.08)",
+                  padding: "3px 7px",
+                  borderRadius: "99px",
+                  fontFamily: "var(--font-sans)",
+                }}
+              >
+                {discountPercent}% OFF
+              </span>
+            )}
+          </div>
 
           {/* Bottom row: qty + remove */}
           <div
