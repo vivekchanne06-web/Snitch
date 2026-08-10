@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import {
   Plus,
   Search,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { useProduct } from "../hook/useProduct.js";
+import { removeProduct } from "../state/product.slice.js";
 
 /* ─── Animation variants ────────────────────────────────── */
 const pageVariants = {
@@ -459,9 +460,9 @@ const DeleteModal = ({ product, onCancel, onConfirm, isDeleting }) => (
 /* ══════════════════════════════════════════════════════════ */
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { handleGetSellerProducts } = useProduct();
+  const dispatch = useDispatch();
+  const { handleGetSellerProducts,handleProductDelete } = useProduct();
   const sellerProducts = useSelector((state) => state.product.sellerProducts);
-
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
@@ -539,15 +540,18 @@ const Dashboard = () => {
   }, [sellerProducts, search, filter]);
 
   /* Delete handlers */
+
   const handleDeleteRequest = (product) => setDeleteTarget(product);
   const handleDeleteCancel = () => { if (!isDeleting) setDeleteTarget(null); };
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      console.log("Delete product:", deleteTarget._id);
-      await new Promise((r) => setTimeout(r, 900));
-      setDeleteTarget(null);
+      const data = await handleProductDelete(deleteTarget._id);
+      if (data.success) {
+        dispatch(removeProduct(deleteTarget._id));
+        setDeleteTarget(null);
+      }
     } catch (err) {
       console.error("Delete failed:", err);
     } finally {

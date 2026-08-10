@@ -1,20 +1,25 @@
-import {createSlice}  from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"
 
-const productSlice =createSlice({
-    name : "product",
-    initialState : {
-        sellerProducts : [],
-        products : [],
-        currentProduct:null, 
+const productSlice = createSlice({
+  name: "product",
+  initialState: {
+    sellerProducts: [],
+    products: [],
+    currentProduct: null,
+  },
+  reducers: {
+    setSellerProducts: (state, action) => {
+      state.sellerProducts = action.payload;
     },
-    reducers : {
-        setSellerProducts : (state,action) => {
-            state.sellerProducts = action.payload;
-        },
-        setProducts : (state,action) => {
-            state.products = action.payload;
-        },
-        setCurrentProduct: (state, action) => {
+    setProducts: (state, action) => {
+      state.products = action.payload;
+    },
+    removeProduct: (state, action) => {
+      state.sellerProducts = state.sellerProducts.filter(
+        (product) => product._id !== action.payload
+      );
+    },
+    setCurrentProduct: (state, action) => {
       state.currentProduct = action.payload;
     },
     updateCurrentProductVariant: (state, action) => {
@@ -45,9 +50,9 @@ const productSlice =createSlice({
         ),
       };
     },
-    },  
+  },
 })
 
 export default productSlice.reducer;
 
-export const {setSellerProducts, setProducts,setCurrentProduct,updateCurrentProductVariant,deleteCurrentProductVariant} = productSlice.actions;  
+export const { setSellerProducts, setProducts,removeProduct,setCurrentProduct, updateCurrentProductVariant, deleteCurrentProductVariant } = productSlice.actions;  
