@@ -1,9 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { config } from "../config/config.js";
 import userModel from "../models/user.model.js";
+import redis from "../config/cache.js";
 
 export const aunthicateSeller = async (req, res, next) => {
-    const token = req.cookies.token; 
+    const token = req.cookies.token;
 
     if (!token) {
         return res.status(401).json({ message: "Unauthorized: No token provided" });
@@ -20,13 +21,13 @@ export const aunthicateSeller = async (req, res, next) => {
 
         if (user.role !== 'seller') {
             return res.status(403).json({ message: "Forbidden: You are not a seller" });
-        } 
+        }
 
         req.user = user;
-        next(); 
-        
+        next();
 
-    }catch (error) {
+
+    } catch (error) {
         console.error("Error occurred while verifying token:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
@@ -35,13 +36,23 @@ export const aunthicateSeller = async (req, res, next) => {
 }
 
 
-export const aunthicateUser= async (req, res, next) => {
-    const token = req.cookies.token;
-
-    if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
-    }
+export const aunthicateUser = async (req, res, next) => {
     try {
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized: No token provided" });
+        }
+
+        const isBlacklisted = await redis.get(token);
+
+        if (isBlacklisted) {
+            return res.status(401).json({
+                message: "Unauthorized",
+                success: false,
+                err: "Token has been blacklisted"
+            });
+        }
         const decoded = jwt.verify(token, config.JWT_SECRET);
         const user = await userModel.findById(decoded.id);
 
@@ -51,10 +62,24 @@ export const aunthicateUser= async (req, res, next) => {
 
         req.user = user;
         next();
-        
-    } catch (error) {
-        console.error("Error occurred while verifying token:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
 
-}
+    } catch (error) {
+        console.error("Authentication error:", error);
+
+        if (
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+                err: "Invalid or expired token",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};

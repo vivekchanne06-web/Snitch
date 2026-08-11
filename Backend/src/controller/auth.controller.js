@@ -1,6 +1,7 @@
 import UserModel from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import { config } from "../config/config.js";
+import redis from "../config/cache.js";
 
 async function sendTokenResponse(user, res, message) {
     const token = jwt.sign({
@@ -125,5 +126,21 @@ export const getCurrentUser = async (req, res) => {
             contact: user.contact,
             role: user.role
         }
+    });
+}
+
+export const logoutUser = async (req, res) => {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
+       
+        await redis.set(token, "blacklisted", "EX", 3600); 
+
+    res.clearCookie("token");
+
+    res.status(200).json({
+        success: true,
+        message: "User logged out successfully"
     });
 }

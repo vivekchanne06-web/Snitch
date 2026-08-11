@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link, useMatches } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
-import { Menu, X, ShoppingBag } from "lucide-react";
+import { Menu, X, ShoppingBag, LogOut } from "lucide-react";
+import { useAuth } from "../../features/auth/hook/useAuth";
 
 /* ── Design tokens — matches Snitch visual identity ─────── */
 const C = {
@@ -21,10 +22,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   const matches = useMatches();
   const user = useSelector((s) => s.auth.user);
+  const { handleLogout } = useAuth();
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   /* Extract route metadata from the current active match */
   const currentMatch = [...matches].reverse().find((m) => m.handle?.navbar);
@@ -57,6 +60,23 @@ const Navbar = () => {
   useEffect(() => {
     setMenuOpen(false);
   }, [matches]);
+
+  /* Logout action handler */
+  const onLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      const res = await handleLogout();
+      setMenuOpen(false);
+      if (res !== undefined) {
+        navigate("/home");
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   const initial = user?.name
     ? user.name.charAt(0).toUpperCase()
@@ -189,34 +209,72 @@ const Navbar = () => {
             </motion.button>
           )}
 
-          {/* User Avatar / Login */}
+          {/* User Avatar & Logout / Login */}
           {user ? (
-            <motion.button
-              whileHover={{ scale: 1.06, y: -1 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() =>
-                user.role === "seller" ? navigate("/seller/products") : null
-              }
-              title={user.name || user.email}
-              style={{
-                width: "36px",
-                height: "36px",
-                borderRadius: "50%",
-                background: C.primary,
-                color: C.white,
-                border: `2px solid ${C.white}`,
-                cursor: user.role === "seller" ? "pointer" : "default",
-                fontSize: "13px",
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                letterSpacing: "0.02em",
-                boxShadow: "0 2px 8px rgba(169,90,58,0.22)",
-              }}
-            >
-              {initial}
-            </motion.button>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <motion.button
+                whileHover={{ scale: 1.06, y: -1 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={() =>
+                  user.role === "seller" ? navigate("/seller/products") : null
+                }
+                title={user.name || user.email}
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: C.primary,
+                  color: C.white,
+                  border: `2px solid ${C.white}`,
+                  cursor: user.role === "seller" ? "pointer" : "default",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  letterSpacing: "0.02em",
+                  boxShadow: "0 2px 8px rgba(169,90,58,0.22)",
+                }}
+              >
+                {initial}
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: loggingOut ? 1 : 1.08, y: loggingOut ? 0 : -1 }}
+                whileTap={{ scale: loggingOut ? 1 : 0.9 }}
+                onClick={onLogout}
+                disabled={loggingOut}
+                aria-label="Log out"
+                title="Log out"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: loggingOut ? "not-allowed" : "pointer",
+                  color: C.text,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  padding: 0,
+                  transition: "color 0.2s ease, background 0.2s ease, opacity 0.2s ease",
+                  opacity: loggingOut ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!loggingOut) {
+                    e.currentTarget.style.color = C.primary;
+                    e.currentTarget.style.background = "rgba(169,90,58,0.06)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = C.text;
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <LogOut size={19} strokeWidth={1.8} />
+              </motion.button>
+            </div>
           ) : (
             <motion.button
               whileHover={{ scale: 1.02, y: -1 }}
@@ -251,7 +309,7 @@ const Navbar = () => {
           )}
 
           {/* Mobile menu toggle */}
-          {isMobile && navLinks.length > 0 && (
+          {isMobile && (navLinks.length > 0 || user) && (
             <motion.button
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.9 }}
@@ -324,6 +382,48 @@ const Navbar = () => {
                 {label}
               </Link>
             ))}
+
+            {user && (
+              <button
+                onClick={onLogout}
+                disabled={loggingOut}
+                aria-label="Log out"
+                title="Log out"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "14px clamp(20px, 5vw, 32px)",
+                  fontFamily: '"Outfit", sans-serif',
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: C.text,
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: `1px solid ${C.border}`,
+                  cursor: loggingOut ? "not-allowed" : "pointer",
+                  transition: "color 0.15s ease, background 0.15s ease, opacity 0.15s ease",
+                  opacity: loggingOut ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!loggingOut) {
+                    e.currentTarget.style.color = C.primary;
+                    e.currentTarget.style.background = "rgba(169,90,58,0.04)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = C.text;
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <LogOut size={18} strokeWidth={1.8} />
+                <span>{loggingOut ? "Signing out..." : "Sign out"}</span>
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
