@@ -274,21 +274,14 @@ const CartItemRow = ({
   const { product, quantity, price } = item;
 
   /* Resolve the selected variant */
-  const selectedVariant = product?.variants?.find(
-    (v) => v._id.toString() === item.variant.toString()
-  );
+  const selectedVariant = product?.variants;
 
   /* Variant images take priority over product images */
   const images =
     selectedVariant?.images?.length > 0
-      ? selectedVariant.images
-      : product?.images || [];
+        ? selectedVariant.images
+        : product?.images || []
   const primaryImage = images[0]?.url || null;
-
-  /* Price: variant price > item price > product price */
-  // const priceObj =
-  //   selectedVariant?.price || price || product?.price || { amount: 0, currency: "INR" };
-  // const itemTotal = priceObj.amount * quantity;
   const originalPrice = price?.amount || 0;
   const currentPriceObj = selectedVariant?.price || product?.price || price || { amount: 0, currency: "INR" };
   const currentPrice = currentPriceObj?.amount || 0;
@@ -297,7 +290,7 @@ const CartItemRow = ({
   const discountPercent = hasDiscount && originalPrice > 0
     ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
     : 0;
-  const itemTotal = currentPrice * quantity
+  const itemTotal = item.itemPrice ?? currentPrice * quantity;
 
   /* Attributes */
   const attrs = selectedVariant?.attributes || {};
@@ -508,7 +501,7 @@ const CartItemRow = ({
                 fontWeight: 500,
               }}
             >
-              Subtotal: {formatPrice(itemTotal, priceObj.currency)}
+              Subtotal: {formatPrice(itemTotal, currentPriceObj.currency)}
             </p>
           )}
 
@@ -541,7 +534,7 @@ const CartItemRow = ({
    ══════════════════════════════════════════════════════════════════════ */
 const OrderSummary = ({ items, onCheckout }) => {
   const subtotal = items.reduce((acc, item) => {
-    const variant = item.product?.variants?.find((v) => v._id === item.variant);
+    const variant = item.product?.variants;
     const price = variant?.price || item.price || item.product?.price || { amount: 0 };
     return acc + price.amount * item.quantity;
   }, 0);

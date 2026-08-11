@@ -1,7 +1,7 @@
 import cartModel from '../models/cart.model.js';
 import productModel from '../models/product.model.js';
 import { stockOfVarient } from '../dao/product.dao.js';
-
+import mangoose from 'mongoose';
 
 export const addToCart = async (req, res) => {
     const { productId, variantId } = req.params;
@@ -90,21 +90,101 @@ export const addToCart = async (req, res) => {
 }
 
 export const getCart = async (req, res) => {
-    const user = req.user
+    try {
+        const user = req.user;
 
-    let cart = await cartModel.findOne({ user: user._id })
-        .populate("items.product")
+        const cart = await cartModel.aggregate([
+            {
+                $match: {
+                    user: new mangoose.Types.ObjectId(user._id)
+                }
+            },
+            {
+                $unwind: "$items"
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "items.product",
+                    foreignField: "_id",
+                    as: "product"
+                }
+            },
+            {
+                $unwind: "$product"
+            },
+            {
+                $unwind: "$product.variants"
+            },
+            {
+                $match: {
+                    $expr: {
+                        $eq: [
+                            "$items.variant",
+                            "$product.variants._id"
+                        ]
+                    }
+                }
+            },
+            {
+                $set: {
+                    "items.product": "$product",
+                    "items.itemPrice": {
+                        $multiply: [
+                            "$items.quantity",
+                            "$product.variants.price.amount"
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    user: { $first: "$user" },
+                    items: { $push: "$items" },
+                    total: { $sum: "$items.itemPrice" }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    user: 1,
+                    items: 1,
+                    total: 1
+                }
+            }
+        ]);
 
-    if (!cart) {
-        cart = await cartModel.create({ user: user._id })
+      
+        if (!cart.length) {
+            const newCart = await cartModel.create({
+                user: user._id,
+                items: []
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Cart retrieved successfully",
+                cart: newCart
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Cart retrieved successfully",
+            cart: cart[0]
+        });
+
+    } catch (error) {
+        console.error("Get cart error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to retrieve cart",
+            error: error.message
+        });
     }
-
-    return res.status(200).json({
-        success: true,
-        message: 'Cart retrieved successfully',
-        cart: cart
-    })
-}
+};
 
 export const incrementQuantity = async (req, res) => {
     const { productId, variantId } = req.params;
