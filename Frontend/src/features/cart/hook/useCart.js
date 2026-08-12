@@ -1,22 +1,22 @@
-import { addItemInCart, getCartDetails,incrementQuantityInCart,decrementQuantityInCart,removeItemFromCart } from "../service/cart.api"
+import { addItemInCart, getCartDetails, verifyOrderPayment, incrementQuantityInCart, createPaymentOrder, decrementQuantityInCart, removeItemFromCart } from "../service/cart.api"
 import { useDispatch } from "react-redux"
-import { setCart, incrementQuantity, decrementQuantity,removeItem } from "../state/cart.slice"
+import { setCart, incrementQuantity, decrementQuantity, removeItem } from "../state/cart.slice"
 
 export const useCart = () => {
 
     const dispatch = useDispatch()
 
     async function handleAddToCart(productId, variantId) {
-    try {
-        const data = await addItemInCart({ productId, variantId });
+        try {
+            const data = await addItemInCart({ productId, variantId });
 
-        dispatch(setCart(data.cart.items));
+            dispatch(setCart(data.cart.items));
 
-        console.log("Item added successfully");
-    } catch (error) {
-        console.error(error.response?.data?.message || error.message);
+            console.log("Item added successfully");
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
     }
-}
 
     async function handleGetCart() {
         try {
@@ -30,13 +30,13 @@ export const useCart = () => {
     async function handleIncrement(productId, variantId) {
         try {
             const data = await incrementQuantityInCart({ productId, variantId });
-            if(data.success){
+            if (data.success) {
                 dispatch(incrementQuantity({ productId, variantId }));
                 console.log("Item incremented successfully");
-            }else{
+            } else {
                 console.error(data.message);
             }
-            
+
         } catch (error) {
             console.error(error.response?.data?.message || error.message);
         }
@@ -45,10 +45,10 @@ export const useCart = () => {
     async function handleDecrement(productId, variantId) {
         try {
             const data = await decrementQuantityInCart({ productId, variantId });
-            if(data.success){
+            if (data.success) {
                 dispatch(decrementQuantity({ productId, variantId }));
                 console.log("Item decremented successfully");
-            }else{
+            } else {
                 console.error(data.message);
             }
         } catch (error) {
@@ -59,12 +59,30 @@ export const useCart = () => {
     async function handleRemoveFromCart(productId, variantId) {
         try {
             const data = await removeItemFromCart({ productId, variantId });
-            if(data.success){
+            if (data.success) {
                 dispatch(removeItem({ productId, variantId }));
                 console.log("Item removed successfully");
-            }else{
+            } else {
                 console.error(data.message);
             }
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
+    }
+
+    async function handlePayment() {
+        try {
+            const data = await createPaymentOrder()
+            return data.order
+        } catch (error) {
+            console.error(error.response?.data?.message || error.message);
+        }
+    }
+
+    async function handleVerifyOrderPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
+        try {
+            const data = await verifyOrderPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
+            return data.success
         } catch (error) {
             console.error(error.response?.data?.message || error.message);
         }
@@ -75,7 +93,9 @@ export const useCart = () => {
         handleGetCart,
         handleIncrement,
         handleDecrement,
-        handleRemoveFromCart 
+        handleRemoveFromCart,
+        handlePayment,
+        handleVerifyOrderPayment
     }
 
 

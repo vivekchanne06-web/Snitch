@@ -13,6 +13,8 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { useCart } from "../hook/useCart";
+import { useRazorpay } from "react-razorpay";
+import { useToast } from "../../../shared/components/Toast";
 
 /* ══════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact Snitch palette
@@ -279,8 +281,8 @@ const CartItemRow = ({
   /* Variant images take priority over product images */
   const images =
     selectedVariant?.images?.length > 0
-        ? selectedVariant.images
-        : product?.images || []
+      ? selectedVariant.images
+      : product?.images || []
   const primaryImage = images[0]?.url || null;
   const originalPrice = price?.amount || 0;
   const currentPriceObj = selectedVariant?.price || product?.price || price || { amount: 0, currency: "INR" };
@@ -881,9 +883,12 @@ const CartSkeleton = () => (
    ══════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart } = useCart();
+  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart,handleVerifyOrderPayment,handlePayment } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const { error, isLoading, Razorpay } = useRazorpay();
+  const user = useSelector((state)=>state.user);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const loadCart = async () => {
@@ -895,10 +900,47 @@ const Cart = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCheckout = useCallback(() => {
+  const handleCheckout =  useCallback(async () => {
     // Checkout route to be implemented — navigate or trigger checkout flow
-    console.log("Proceed to checkout");
-  }, []);
+    const order = await handlePayment()
+    console.log(order, "Proceed to checkout");
+    
+    const options = {
+      key: "rzp_test_TOl74cw8lDCwik",
+      amount: order.amount, // Amount in paise
+      currency: order.currency,
+      name: "Snitch",
+      description: "Payment for order",
+      order_id: order.id, // Generate order_id on server
+      handler: async(response) => {
+        const verifyPayment = await handleVerifyOrderPayment(response)
+        
+        if(verifyPayment){
+          showToast({
+            title: "Payment Successful",
+            message: "Your order has been placed successfully.",
+            type: "success",
+            duration: 3500,
+          });
+          navigate("/home");
+        }
+      },
+      prefill: {
+        name: user?.userInfo?.fullName || user?.fullName,
+        email: user?.userInfo?.email || user?.email, 
+        contact: user?.userInfo?.mobileNumber || user?.mobileNumber || "",
+      },
+      theme: {
+        color: "#F37254",
+      },
+    };
+
+    const razorpayInstance = new Razorpay(options);
+    razorpayInstance.open();
+
+
+
+  }, [handlePayment]);
 
   const handleExplore = useCallback(() => {
     navigate("/home");
