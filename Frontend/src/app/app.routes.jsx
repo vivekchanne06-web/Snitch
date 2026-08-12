@@ -11,6 +11,7 @@ import LandingPage from "../features/products/pages/LandingPage";
 import Cart from "../features/cart/pages/Cart";
 import NotFound from "../features/products/pages/NotFound";
 import AppLayout from "./AppLayout";
+import Address from "../features/address/pages/Address";
 
 export const routes = createBrowserRouter([
     {
@@ -65,6 +66,22 @@ export const routes = createBrowserRouter([
                     navbar: {
                         navLinks: [{ label: "Continue Shopping", to: "/home" }],
                         showCart: false
+                    }
+                }
+            },
+            {
+                path: "/address",
+                element: (
+                    <Protected>
+                        <Address />
+                    </Protected>
+                ),
+                handle: {
+                    navbar: {
+                        navLinks: [
+                            { label: "Shop", to: "/home" }
+                        ],
+                        showCart: true
                     }
                 }
             },

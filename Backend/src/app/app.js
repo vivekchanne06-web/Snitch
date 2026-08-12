@@ -8,6 +8,7 @@ import passport from "passport";
 import {Strategy as GoogleStrategy } from "passport-google-oauth20";
 import productRouter from "../routes/product.route.js";
 import cartRouter from "../routes/cart.route.js";
+import addressRouter from "../routes/address.route.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/address", addressRouter);
 
 
 
