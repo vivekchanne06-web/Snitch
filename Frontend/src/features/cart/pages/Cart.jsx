@@ -15,6 +15,7 @@ import {
 import { useCart } from "../hook/useCart";
 import { useRazorpay } from "react-razorpay";
 import { useToast } from "../../../shared/components/Toast";
+import DeliveryAddressStrip from "../components/DeliveryAddressStrip";
 
 /* ══════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact Snitch palette
@@ -1002,7 +1003,9 @@ const Cart = () => {
           ) : cartItems.length === 0 ? (
             <EmptyCart onExplore={handleExplore} />
           ) : (
-            <div className="cart-grid">
+            <>
+              <DeliveryAddressStrip />
+              <div className="cart-grid">
               {/* LEFT: Cart Items */}
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {/* Item count header */}
@@ -1087,6 +1090,7 @@ const Cart = () => {
                 onCheckout={handleCheckout}
               />
             </div>
+            </>
           )}
         </main>
       </div>
