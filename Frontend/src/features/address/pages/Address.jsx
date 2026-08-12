@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, ArrowRight } from "lucide-react";
 import { useAddress } from "../hook/useAddress";
 import { useToast } from "../../../shared/components/Toast";
 import AddressCard from "../components/AddressCard";
@@ -180,6 +181,7 @@ const Address = () => {
     (state) => state.address
   );
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -241,6 +243,43 @@ const Address = () => {
 
       <div className="address-shell">
         <main className="address-layout">
+
+          {/* ── Back to Cart ─────────────────────────────── */}
+          <motion.button
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            whileHover="hovered"
+            onClick={() => navigate("/cart")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "0 0 20px",
+              fontFamily: "var(--font-sans)",
+              fontSize: "11.5px",
+              fontWeight: 600,
+              letterSpacing: "0.10em",
+              textTransform: "uppercase",
+              color: "#6E6D68",
+              transition: "color 0.18s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#A95A3A")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#6E6D68")}
+            aria-label="Back to cart"
+          >
+            <motion.span
+              variants={{ hovered: { x: -3 } }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              ←
+            </motion.span>
+            Back to Cart
+          </motion.button>
 
           {/* ── Page Heading ─────────────────────────────── */}
           <motion.div
@@ -383,6 +422,60 @@ const Address = () => {
               )}
             </div>
           )}
+
+          {/* ── Continue to Cart CTA ─────────────────────── */}
+          <AnimatePresence>
+            {selectedAddress && addresses.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  marginTop: "clamp(24px, 4vw, 36px)",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/cart")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    height: "46px",
+                    padding: "0 28px",
+                    background: "#A95A3A",
+                    color: "#FFFFFF",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    letterSpacing: "0.10em",
+                    textTransform: "uppercase",
+                    boxShadow: "var(--shadow-button)",
+                    transition: "background 0.2s ease",
+                    width: "clamp(0px, 100%, 260px)",
+                    justifyContent: "center",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#8B4A2F")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "#A95A3A")
+                  }
+                  aria-label="Continue to cart"
+                >
+                  Continue to Cart
+                  <ArrowRight size={15} />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </>
