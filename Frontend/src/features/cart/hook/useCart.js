@@ -79,10 +79,18 @@ export const useCart = () => {
         }
     }
 
-    async function handleVerifyOrderPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature) {
+    async function handleVerifyOrderPayment({
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+    }) {
         try {
-            const data = await verifyOrderPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
-            return data.success
+            const data = await verifyOrderPayment(
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature
+            );
+            return data.success;
         } catch (error) {
             console.error(error.response?.data?.message || error.message);
         }

@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 import priceSchema from "./price.schema.js";
 
 const paymentSchema = new mongoose.Schema({
+    order: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order",
+        required: true,
+    },
     status: {
         type: String,
         enum: ["pending", "completed", "failed"],
@@ -16,41 +21,22 @@ const paymentSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    method: {
+        type: String,
+        enum: ["cod", "razorpay"],
+        required: true,
+    },
     razorpay: {
         orderId: String,
         paymentId: String,
         signature: String
     },
-    orderItems: [{
-        title: {
-            type: String,
-            required: true,
-        },
-        description: { 
-            type: String,
-            required: true,
-        },
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-            required: true,
-        },
-        variant: {
-            type: mongoose.Schema.Types.ObjectId,
-
-        },
-        quantity: {
-            type: Number,
-            required: true,
-        },
-        price: {
-            type: priceSchema,
-            required: true,
-        },
-        images: [{ url: String }],
-        
-    }]
-})
+    
+    },
+    {
+        timestamps: true,
+    }
+)
 
 const paymentModel = mongoose.model("Payment", paymentSchema);
 

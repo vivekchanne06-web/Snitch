@@ -1,15 +1,30 @@
-import mangoose from 'mongoose';
+import mongoose from 'mongoose';
 import cartModel from '../models/cart.model.js';
 
 export async function getCartDetails(userId) {
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const existingCart = await cartModel.findOne({ user: userObjectId }).lean();
+    if (!existingCart) {
+        return [];
+    }
+    if (!existingCart.items || existingCart.items.length === 0) {
+        return [
+        {
+            _id: existingCart._id,
+            user: existingCart.user,
+            items: [],
+            total: 0
+        }
+        ];
+    }
     let cart = await cartModel.aggregate([
             {
                 $match: {
-                    user: new mangoose.Types.ObjectId(userId)
+                    user: userObjectId
                 }
             },
             {
-                $unwind: "$items"
+                $unwind: "$items",
             },
             {
                 $lookup: {

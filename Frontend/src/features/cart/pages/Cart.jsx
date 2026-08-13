@@ -884,10 +884,13 @@ const CartSkeleton = () => (
    ══════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart,handleVerifyOrderPayment,handlePayment } = useCart();
+  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart, handleVerifyOrderPayment, handlePayment } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state)=>state.user);
+  const user = useSelector((state) => state.user);
+  const selectedAddress = useSelector(
+    (state) => state.address.selectedAddress
+  );
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -900,22 +903,18 @@ const Cart = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCheckout =  useCallback(async () => {
-    const isLoaded = await loadRazorpayScript();
-    if (!isLoaded || !window.Razorpay) {
-      showToast({
-        title: "Payment Error",
-        message: "Razorpay SDK failed to load. Please check your connection.",
-        type: "error",
-        duration: 3500,
-      });
-      return;
-    }
+  const handleCheckout = useCallback(async () => {
+  if (!selectedAddress) {
+    navigate("/address");
+    return;
+  }
+
+  const isLoaded = await loadRazorpayScript();
 
     // Checkout route to be implemented — navigate or trigger checkout flow
     const order = await handlePayment()
     console.log(order, "Proceed to checkout");
-    
+
     const options = {
       key: "rzp_test_TOl74cw8lDCwik",
       amount: order.amount, // Amount in paise
@@ -923,10 +922,14 @@ const Cart = () => {
       name: "Snitch",
       description: "Payment for order",
       order_id: order.id, // Generate order_id on server
-      handler: async(response) => {
-        const verifyPayment = await handleVerifyOrderPayment(response)
-        
-        if(verifyPayment){
+      handler: async (response) => {
+        const verifyPayment = await handleVerifyOrderPayment({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+        });
+
+        if (verifyPayment) {
           showToast({
             title: "Payment Successful",
             message: "Your order has been placed successfully.",
@@ -938,7 +941,7 @@ const Cart = () => {
       },
       prefill: {
         name: user?.userInfo?.fullName || user?.fullName,
-        email: user?.userInfo?.email || user?.email, 
+        email: user?.userInfo?.email || user?.email,
         contact: user?.userInfo?.mobileNumber || user?.mobileNumber || "",
       },
       theme: {
@@ -949,7 +952,7 @@ const Cart = () => {
     const razorpayInstance = new window.Razorpay(options);
     razorpayInstance.open();
 
-  }, [handlePayment, handleVerifyOrderPayment, navigate, showToast, user]);
+  }, [handlePayment, handleVerifyOrderPayment, selectedAddress, navigate, showToast, user]);
 
   const handleExplore = useCallback(() => {
     navigate("/home");
@@ -1014,90 +1017,90 @@ const Cart = () => {
             <>
               <DeliveryAddressStrip />
               <div className="cart-grid">
-              {/* LEFT: Cart Items */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                {/* Item count header */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingBottom: "12px",
-                    borderBottom: "1px solid var(--color-border)",
-                  }}
-                >
-                  <span
+                {/* LEFT: Cart Items */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* Item count header */}
+                  <div
                     style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      letterSpacing: "0.18em",
-                      textTransform: "uppercase",
-                      color: "var(--color-input)",
-                      fontFamily: "var(--font-sans)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingBottom: "12px",
+                      borderBottom: "1px solid var(--color-border)",
                     }}
                   >
-                    {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
-                  </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                        color: "var(--color-input)",
+                        fontFamily: "var(--font-sans)",
+                      }}
+                    >
+                      {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+                    </span>
 
-                  <button
-                    className="continue-btn"
-                    onClick={handleExplore}
+                    <button
+                      className="continue-btn"
+                      onClick={handleExplore}
+                    >
+                      Continue Shopping
+                    </button>
+                  </div>
+
+                  {/* Cart Items */}
+                  <AnimatePresence mode="popLayout">
+                    {cartItems.map((item, index) => (
+                      <CartItemRow
+                        key={item._id}
+                        item={item}
+                        index={index}
+                        onRemove={handleRemoveFromCart}
+                        onIncrement={handleIncrement}
+                        onDecrement={handleDecrement}
+                      />
+                    ))}
+                  </AnimatePresence>
+
+                  {/* Shipping info banner */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4, delay: 0.35 }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "14px 18px",
+                      background: "rgba(46,125,50,0.06)",
+                      border: "1px solid rgba(46,125,50,0.15)",
+                      borderRadius: "var(--radius-md)",
+                      marginTop: "4px",
+                    }}
                   >
-                    Continue Shopping
-                  </button>
+                    <Truck size={16} color="#2E7D32" />
+                    <span
+                      style={{
+                        fontSize: "12.5px",
+                        fontWeight: 600,
+                        color: "#2E7D32",
+                        fontFamily: "var(--font-sans)",
+                        letterSpacing: "0.02em",
+                      }}
+                    >
+                      You qualify for free delivery on this order.
+                    </span>
+                  </motion.div>
                 </div>
 
-                {/* Cart Items */}
-                <AnimatePresence mode="popLayout">
-                  {cartItems.map((item, index) => (
-                    <CartItemRow
-                      key={item._id}
-                      item={item}
-                      index={index}
-                      onRemove={handleRemoveFromCart}
-                      onIncrement={handleIncrement}
-                      onDecrement={handleDecrement}
-                    />
-                  ))}
-                </AnimatePresence>
-
-                {/* Shipping info banner */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4, delay: 0.35 }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "14px 18px",
-                    background: "rgba(46,125,50,0.06)",
-                    border: "1px solid rgba(46,125,50,0.15)",
-                    borderRadius: "var(--radius-md)",
-                    marginTop: "4px",
-                  }}
-                >
-                  <Truck size={16} color="#2E7D32" />
-                  <span
-                    style={{
-                      fontSize: "12.5px",
-                      fontWeight: 600,
-                      color: "#2E7D32",
-                      fontFamily: "var(--font-sans)",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    You qualify for free delivery on this order.
-                  </span>
-                </motion.div>
+                {/* RIGHT: Order Summary */}
+                <OrderSummary
+                  items={cartItems}
+                  onCheckout={handleCheckout}
+                />
               </div>
-
-              {/* RIGHT: Order Summary */}
-              <OrderSummary
-                items={cartItems}
-                onCheckout={handleCheckout}
-              />
-            </div>
             </>
           )}
         </main>
