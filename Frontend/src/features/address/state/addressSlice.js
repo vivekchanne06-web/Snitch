@@ -22,9 +22,31 @@ const addressSlice = createSlice({
         addAddress: (state, action) => {
             state.addresses.push(action.payload);
         },
+         updateAddress: (state, action) => {
+            const updatedAddress = action.payload;
+
+            const index = state.addresses.findIndex(
+                (address) => address._id === updatedAddress._id
+            );
+
+            if (index !== -1) {
+                state.addresses[index] = updatedAddress;
+            }
+        },
+        removeAddress: (state, action) => {
+            state.addresses = state.addresses.filter(
+                (address) => address._id !== action.payload
+            );
+        },
+        setLoading: (state, action) => {
+            state.loading = action.payload
+        },
+        setError: (state, action) => {
+            state.error = action.payload
+        }
     }
 })
 
 
-export const { setAddresses,setSelectedAddress,addAddress } = addressSlice.actions
-export default addressSlice.reducer
+export const { setAddresses,setSelectedAddress,addAddress, updateAddress, removeAddress,setLoading,setError } = addressSlice.actions
+export default addressSlice.reducer 

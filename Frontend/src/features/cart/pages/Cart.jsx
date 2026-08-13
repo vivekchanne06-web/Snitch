@@ -13,7 +13,7 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { useCart } from "../hook/useCart";
-import { useRazorpay } from "react-razorpay";
+import { loadRazorpayScript } from "../../../shared/utils/razorpay";
 import { useToast } from "../../../shared/components/Toast";
 import DeliveryAddressStrip from "../components/DeliveryAddressStrip";
 
@@ -887,7 +887,6 @@ const Cart = () => {
   const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart,handleVerifyOrderPayment,handlePayment } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const { error, isLoading, Razorpay } = useRazorpay();
   const user = useSelector((state)=>state.user);
   const { showToast } = useToast();
 
@@ -902,6 +901,17 @@ const Cart = () => {
   }, []);
 
   const handleCheckout =  useCallback(async () => {
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded || !window.Razorpay) {
+      showToast({
+        title: "Payment Error",
+        message: "Razorpay SDK failed to load. Please check your connection.",
+        type: "error",
+        duration: 3500,
+      });
+      return;
+    }
+
     // Checkout route to be implemented — navigate or trigger checkout flow
     const order = await handlePayment()
     console.log(order, "Proceed to checkout");
@@ -936,12 +946,10 @@ const Cart = () => {
       },
     };
 
-    const razorpayInstance = new Razorpay(options);
+    const razorpayInstance = new window.Razorpay(options);
     razorpayInstance.open();
 
-
-
-  }, [handlePayment]);
+  }, [handlePayment, handleVerifyOrderPayment, navigate, showToast, user]);
 
   const handleExplore = useCallback(() => {
     navigate("/home");

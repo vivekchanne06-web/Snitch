@@ -35,8 +35,18 @@ const REQUIRED_FIELDS = [
   "postalCode",
 ];
 
-const AddressForm = ({ onSubmit, onCancel, isSubmitting }) => {
-  const [form, setForm] = useState(INITIAL_FORM);
+const AddressForm = ({ onSubmit, onCancel, isSubmitting, initialData = null }) => {
+  const [form, setForm] = useState(() => ({
+    fullName: initialData?.fullName || "",
+    emailId: initialData?.emailId || "",
+    phoneNumber: initialData?.phoneNumber || "",
+    addressLine1: initialData?.addressLine1 || "",
+    addressLine2: initialData?.addressLine2 || "",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    postalCode: initialData?.postalCode || "",
+    isDefault: initialData?.isDefault || false,
+  }));
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -104,7 +114,7 @@ const AddressForm = ({ onSubmit, onCancel, isSubmitting }) => {
             color: "#B4B2A7",
           }}
         >
-          New Address
+          {initialData ? "Edit Address" : "New Address"}
         </p>
         <button
           type="button"
@@ -327,7 +337,7 @@ const AddressForm = ({ onSubmit, onCancel, isSubmitting }) => {
               boxShadow: isSubmitting ? "none" : "var(--shadow-button)",
             }}
           >
-            {isSubmitting ? "Saving…" : "Save Address"}
+            {isSubmitting ? "Saving…" : initialData ? "Update Address" : "Save Address"}
           </motion.button>
         </div>
       </form>

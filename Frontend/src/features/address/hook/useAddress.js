@@ -1,33 +1,112 @@
-import { useDispatch} from "react-redux";
-import { createAddress,getUserAddress } from "../service/address.api";
-import { addAddress,setAddresses,setSelectedAddress } from "../state/addressSlice";
+import { useDispatch } from "react-redux";
+import { createUserAddress, getUserAddress, deleteUserAddress, updateUserAddress } from "../service/address.api";
+import { addAddress, setAddresses, setSelectedAddress, setLoading, setError, updateAddress, removeAddress } from "../state/addressSlice";
 
 
 export const useAddress = () => {
     const dispatch = useDispatch()
 
     const handleCreateAddress = async (formData) => {
-        const response = await createAddress(formData)
-        if(response.success){
-            dispatch(addAddress(response.address))
+        try {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+
+            const response = await createUserAddress(formData);
+
+            if (response.success) {
+                dispatch(addAddress(response.address));
+            }
+            return response;
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                error.message ||
+                "Failed to create address.";
+            dispatch(setError(message));
+            return {
+                success: false,
+                message
+            };
+        } finally {
+            dispatch(setLoading(false));
         }
-        return response
-    }
+    };
 
     const handleGetUserAddress = async () => {
-        const response = await getUserAddress()
-        if(response.success){
-            dispatch(setAddresses(response.addresses))
+        try {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+
+            const response = await getUserAddress();
+
+            if (response.success) {
+                dispatch(setAddresses(response.addresses));
+            }
+
+            return response;
+
+        } catch (error) {
+
+            const message =
+                error.response?.data?.message ||
+                error.message ||
+                "Failed to get addresses.";
+
+            dispatch(setError(message));
+
+            return {
+                success: false,
+                message
+            };
+
+        } finally {
+            dispatch(setLoading(false));
         }
-        return response
-    }
+    };
+
     const handleSelectAddress = (address) => {
         dispatch(setSelectedAddress(address));
+    };
+
+    const handleUpdateAddress = async (addressId, formData) => {
+        try {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+            const response = await updateUserAddress(addressId, formData);
+            if (response.success) {
+                dispatch(updateAddress(response.address));
+            }
+            return response;
+        } catch (error) {
+            dispatch(setError(error.message));
+            return { success: false, error: error.message };
+        } finally {
+            dispatch(setLoading(false));
+        }
+    };
+
+    const handleDeleteAddress = async (addressId) => {
+        try {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+            const response = await deleteUserAddress(addressId);
+            if (response.success) {
+                dispatch(removeAddress(addressId));
+            }
+            return response;
+        } catch (error) {
+            dispatch(setError(error.message));
+            return { success: false, error: error.message };
+        } finally {
+            dispatch(setLoading(false));
+        }
     };
 
     return {
         handleCreateAddress,
         handleGetUserAddress,
-        handleSelectAddress
+        handleSelectAddress,
+        handleUpdateAddress,
+        handleDeleteAddress
     }
 }

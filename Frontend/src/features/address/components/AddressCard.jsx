@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Pencil, Trash2 } from "lucide-react";
 
 /**
  * AddressCard — displays a single saved address.
@@ -8,8 +9,10 @@ import { motion } from "framer-motion";
  *  - isSelected   : boolean — whether this card is the active selection
  *  - onSelect     : function — called when user clicks card or "Use this address"
  *  - index        : number — for staggered entrance animation
+ *  - onUpdate     : function — called when user clicks edit button
+ *  - onDelete     : function — called when user clicks delete button
  */
-const AddressCard = ({ address, isSelected, onSelect, index }) => {
+const AddressCard = ({ address, isSelected, onSelect, index, onUpdate, onDelete }) => {
   const {
     fullName,
     emailId,
@@ -67,34 +70,88 @@ const AddressCard = ({ address, isSelected, onSelect, index }) => {
           {isDefault ? "Default" : "Address"}
         </span>
 
-        {/* Selected checkmark badge */}
-        {isSelected && (
-          <motion.span
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              width: "19px",
-              height: "19px",
-              borderRadius: "50%",
-              background: "#A95A3A",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path
-                d="M2 5l2.2 2.2L8 3"
-                stroke="#fff"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </motion.span>
-        )}
+        {/* Action icons and Selected checkmark badge */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {onUpdate && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onUpdate(address);
+              }}
+              title="Edit address"
+              aria-label="Edit address"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px",
+                display: "flex",
+                alignItems: "center",
+                color: "#B4B2A7",
+                transition: "color 0.18s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#A95A3A")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#B4B2A7")}
+            >
+              <Pencil size={15} />
+            </button>
+          )}
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(address._id);
+              }}
+              title="Delete address"
+              aria-label="Delete address"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "2px",
+                display: "flex",
+                alignItems: "center",
+                color: "#B4B2A7",
+                transition: "color 0.18s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#DC2626")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#B4B2A7")}
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
+
+          {isSelected && (
+            <motion.span
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                width: "19px",
+                height: "19px",
+                borderRadius: "50%",
+                background: "#A95A3A",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path
+                  d="M2 5l2.2 2.2L8 3"
+                  stroke="#fff"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.span>
+          )}
+        </div>
       </div>
 
       {/* ── Contact info ──────────────────────────────── */}

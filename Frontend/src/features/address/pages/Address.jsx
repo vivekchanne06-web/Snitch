@@ -175,7 +175,7 @@ const EmptyAddressState = ({ onAdd }) => (
    ADDRESS PAGE — Main Component
    ══════════════════════════════════════════════════════════════════════ */
 const Address = () => {
-  const { handleCreateAddress, handleGetUserAddress, handleSelectAddress } =
+  const { handleCreateAddress, handleGetUserAddress, handleSelectAddress,handleDeleteAddress,handleUpdateAddress } =
     useAddress();
   const { addresses, selectedAddress } = useSelector(
     (state) => state.address
@@ -184,6 +184,7 @@ const Address = () => {
   const navigate = useNavigate();
 
   const [showForm, setShowForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fetched, setFetched] = useState(false);
 
@@ -208,25 +209,104 @@ const Address = () => {
 
   const atMax = addresses.length >= MAX_ADDRESSES;
 
-  /* ── Form submission ───────────────────────────────────────────── */
-  const handleSubmit = async (formData) => {
-    setIsSubmitting(true);
+  /* ── Form open / edit / cancel handlers ────────────────────────── */
+  const handleOpenAddForm = () => {
+    setEditingAddress(null);
+    setShowForm(true);
+  };
+
+  const handleEditAddress = (address) => {
+    setEditingAddress(address);
+    setShowForm(true);
+  };
+
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setEditingAddress(null);
+  };
+
+  /* ── Delete handler ────────────────────────────────────────────── */
+  const handleDelete = async (addressId) => {
     try {
-      const response = await handleCreateAddress(formData);
+      const response = await handleDeleteAddress(addressId);
       if (response?.success) {
-        // Select the newly created address
-        handleSelectAddress(response.address);
+        if (selectedAddress?._id === addressId) {
+          handleSelectAddress(null);
+        }
         showToast({
-          title: "Address saved",
-          message: "Address added successfully.",
+          title: "Address deleted",
+          message: "Address removed successfully.",
           type: "success",
           duration: 3000,
         });
-        setShowForm(false);
+      } else {
+        showToast({
+          title: "Could not delete address",
+          message: response?.error || response?.message || "Please try again.",
+          type: "error",
+          duration: 3500,
+        });
+      }
+    } catch (err) {
+      showToast({
+        title: "Could not delete address",
+        message: err.message || "Please try again.",
+        type: "error",
+        duration: 3500,
+      });
+    }
+  };
+
+  /* ── Form submission (Create or Update) ────────────────────────── */
+  const handleSubmit = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      if (editingAddress) {
+        const response = await handleUpdateAddress(editingAddress._id, formData);
+        if (response?.success) {
+          if (selectedAddress?._id === editingAddress._id) {
+            handleSelectAddress(response.address || { ...editingAddress, ...formData });
+          }
+          showToast({
+            title: "Address updated",
+            message: "Address updated successfully.",
+            type: "success",
+            duration: 3000,
+          });
+          setShowForm(false);
+          setEditingAddress(null);
+        } else {
+          showToast({
+            title: "Could not update address",
+            message: response?.error || response?.message || "Please try again.",
+            type: "error",
+            duration: 3500,
+          });
+        }
+      } else {
+        const response = await handleCreateAddress(formData);
+        if (response?.success) {
+          // Select the newly created address
+          handleSelectAddress(response.address);
+          showToast({
+            title: "Address saved",
+            message: "Address added successfully.",
+            type: "success",
+            duration: 3000,
+          });
+          setShowForm(false);
+        } else {
+          showToast({
+            title: "Could not save address",
+            message: response?.error || response?.message || "Please try again.",
+            type: "error",
+            duration: 3500,
+          });
+        }
       }
     } catch {
       showToast({
-        title: "Could not save address",
+        title: editingAddress ? "Could not update address" : "Could not save address",
         message: "Please try again.",
         type: "error",
         duration: 3500,
@@ -323,15 +403,16 @@ const Address = () => {
             <AnimatePresence mode="wait">
               {showForm ? (
                 <AddressForm
-                  key="addr-form-empty"
+                  key={editingAddress ? `addr-form-${editingAddress._id}` : "addr-form-empty"}
+                  initialData={editingAddress}
                   onSubmit={handleSubmit}
-                  onCancel={() => setShowForm(false)}
+                  onCancel={handleCancelForm}
                   isSubmitting={isSubmitting}
                 />
               ) : (
                 <EmptyAddressState
                   key="addr-empty"
-                  onAdd={() => setShowForm(true)}
+                  onAdd={handleOpenAddForm}
                 />
               )}
             </AnimatePresence>
@@ -346,6 +427,8 @@ const Address = () => {
                   index={index}
                   isSelected={selectedAddress?._id === address._id}
                   onSelect={() => handleSelectAddress(address)}
+                  onUpdate={handleEditAddress}
+                  onDelete={handleDelete}
                 />
               ))}
 
@@ -377,7 +460,7 @@ const Address = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 4 }}
                       transition={{ duration: 0.28, delay: addresses.length * 0.08 }}
-                      onClick={() => setShowForm(true)}
+                      onClick={handleOpenAddForm}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -412,9 +495,10 @@ const Address = () => {
                   ) : (
                     /* Inline form */
                     <AddressForm
-                      key="addr-form"
+                      key={editingAddress ? `addr-form-${editingAddress._id}` : "addr-form"}
+                      initialData={editingAddress}
                       onSubmit={handleSubmit}
-                      onCancel={() => setShowForm(false)}
+                      onCancel={handleCancelForm}
                       isSubmitting={isSubmitting}
                     />
                   )}
