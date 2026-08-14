@@ -397,3 +397,22 @@ export const verifyRazorpayPayment = async (req, res) => {
         });
     }
 };
+
+export const getUserOrders = async (req, res) => {
+    try {
+        const orders = await orderModel
+            .find({ user: req.user._id })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            orders
+        });
+    } catch (error) {
+        console.error("Get user orders error:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

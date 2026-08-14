@@ -12,6 +12,7 @@ import Cart from "../features/cart/pages/Cart";
 import NotFound from "../features/products/pages/NotFound";
 import AppLayout from "./AppLayout";
 import Address from "../features/address/pages/Address";
+import OrderPage from "../features/order/pages/OrderPage";
 
 export const routes = createBrowserRouter([
     {
@@ -80,6 +81,23 @@ export const routes = createBrowserRouter([
                     navbar: {
                         navLinks: [
                             { label: "Shop", to: "/home" }
+                        ],
+                        showCart: true
+                    }
+                }
+            },
+            {
+                path: "/orders",
+                element: (
+                    <Protected>
+                        <OrderPage />
+                    </Protected>
+                ),
+                handle: {
+                    navbar: {
+                        navLinks: [
+                            { label: "Shop", to: "/home" },
+                            { label: "My Cart", to: "/cart" }
                         ],
                         showCart: true
                     }

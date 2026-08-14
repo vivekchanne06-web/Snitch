@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,6 +16,9 @@ import { useCart } from "../hook/useCart";
 import { loadRazorpayScript } from "../../../shared/utils/razorpay";
 import { useToast } from "../../../shared/components/Toast";
 import DeliveryAddressStrip from "../components/DeliveryAddressStrip";
+import { useOrder } from "../../order/hook/useOrder";
+import { setCart } from "../state/cart.slice";
+import PaymentMethodModal from "../../order/components/PaymentMethodModal";
 
 /* ══════════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact Snitch palette
@@ -884,10 +887,14 @@ const CartSkeleton = () => (
    ══════════════════════════════════════════════════════════════════════ */
 const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
-  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart, handleVerifyOrderPayment, handlePayment } = useCart();
+  const dispatch = useDispatch();
+  const { handleGetCart, handleIncrement, handleDecrement, handleRemoveFromCart } = useCart();
+  const { handleCreateCODOrder, handleCreateRazorpayOrder, handleVerifyRazorpayPayment } = useOrder();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const user = useSelector((state) => state.user);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const user = useSelector((state) => state.auth.user);
   const selectedAddress = useSelector(
     (state) => state.address.selectedAddress
   );
@@ -903,56 +910,157 @@ const Cart = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCheckout = useCallback(async () => {
-  if (!selectedAddress) {
-    navigate("/address");
-    return;
-  }
+  /* Open payment modal — only after address check */
+  const handleCheckout = useCallback(() => {
+    if (!selectedAddress) {
+      showToast({
+        title: "No Address Selected",
+        message: "Please select a delivery address before checkout.",
+        type: "error",
+        duration: 3500,
+      });
+      return;
+    }
+    setShowPaymentModal(true);
+  }, [selectedAddress, showToast]);
 
-  const isLoaded = await loadRazorpayScript();
+  /* ── COD ───────────────────────────────────────────────────────── */
+  const handleCOD = useCallback(async () => {
+    if (checkoutLoading) return;
+    setCheckoutLoading(true);
+    try {
+      await handleCreateCODOrder(selectedAddress._id);
+      dispatch(setCart([]));
+      setShowPaymentModal(false);
+      showToast({
+        title: "Order Placed!",
+        message: "Your Cash on Delivery order has been placed successfully.",
+        type: "success",
+        duration: 3500,
+      });
+      navigate("/orders");
+    } catch (error) {
+      showToast({
+        title: "Order Failed",
+        message:
+          error.response?.data?.message ||
+          "Failed to place order. Please try again.",
+        type: "error",
+        duration: 4000,
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  }, [checkoutLoading, selectedAddress, handleCreateCODOrder, dispatch, showToast, navigate]);
 
-    // Checkout route to be implemented — navigate or trigger checkout flow
-    const order = await handlePayment()
-    console.log(order, "Proceed to checkout");
+  /* ── Razorpay ──────────────────────────────────────────────────── */
+  const handleRazorpay = useCallback(async () => {
+    if (checkoutLoading) return;
+    setCheckoutLoading(true);
 
+    /* 1. Load Razorpay SDK (singleton — won't inject twice) */
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded) {
+      showToast({
+        title: "Payment Unavailable",
+        message: "Could not load payment service. Please check your connection and retry.",
+        type: "error",
+        duration: 4000,
+      });
+      setCheckoutLoading(false);
+      return;
+    }
+
+    /* 2. Create Razorpay order on backend */
+    let data;
+    try {
+      data = await handleCreateRazorpayOrder(selectedAddress._id);
+    } catch (error) {
+      showToast({
+        title: "Payment Failed",
+        message:
+          error.response?.data?.message ||
+          "Failed to create payment order. Please try again.",
+        type: "error",
+        duration: 4000,
+      });
+      setCheckoutLoading(false);
+      return;
+    }
+
+    /* 3. Close method-selection modal; Razorpay overlay takes over */
+    setShowPaymentModal(false);
+
+    /* 4. Open Razorpay Checkout — use backend-provided key & order */
     const options = {
-      key: "rzp_test_TOl74cw8lDCwik",
-      amount: order.amount, // Amount in paise
-      currency: order.currency,
+      key: data.keyId,
+      amount: data.razorpayOrder.amount,
+      currency: data.razorpayOrder.currency,
       name: "Snitch",
       description: "Payment for order",
-      order_id: order.id, // Generate order_id on server
+      order_id: data.razorpayOrder.id,
       handler: async (response) => {
-        const verifyPayment = await handleVerifyOrderPayment({
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-        });
-
-        if (verifyPayment) {
+        /* 5. Verify signature on backend — never on frontend */
+        try {
+          await handleVerifyRazorpayPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+          dispatch(setCart([]));
           showToast({
             title: "Payment Successful",
             message: "Your order has been placed successfully.",
             type: "success",
             duration: 3500,
           });
-          navigate("/home");
+          navigate("/orders");
+        } catch (error) {
+          showToast({
+            title: "Verification Failed",
+            message:
+              error.response?.data?.message ||
+              "Payment verification failed. Contact support if amount was deducted.",
+            type: "error",
+            duration: 5000,
+          });
+          setCheckoutLoading(false);
         }
       },
       prefill: {
-        name: user?.userInfo?.fullName || user?.fullName,
-        email: user?.userInfo?.email || user?.email,
-        contact: user?.userInfo?.mobileNumber || user?.mobileNumber || "",
+        name: user?.fullName || user?.name || "",
+        email: user?.email || "",
+        contact: user?.mobileNumber || user?.phoneNumber || "",
       },
       theme: {
-        color: "#F37254",
+        color: "#A95A3A",
+      },
+      modal: {
+        ondismiss: () => {
+          setCheckoutLoading(false);
+          showToast({
+            title: "Payment Cancelled",
+            message: "You cancelled the payment. Your cart is intact.",
+            type: "info",
+            duration: 3000,
+          });
+        },
       },
     };
 
     const razorpayInstance = new window.Razorpay(options);
     razorpayInstance.open();
-
-  }, [handlePayment, handleVerifyOrderPayment, selectedAddress, navigate, showToast, user]);
+    /* checkoutLoading stays true until handler() or ondismiss() resolves */
+  }, [
+    checkoutLoading,
+    selectedAddress,
+    handleCreateRazorpayOrder,
+    handleVerifyRazorpayPayment,
+    dispatch,
+    showToast,
+    navigate,
+    user,
+  ]);
 
   const handleExplore = useCallback(() => {
     navigate("/home");
@@ -969,6 +1077,15 @@ const Cart = () => {
           100% { background-position: 200% 0; }
         }
       `}</style>
+
+      {/* Payment Method Modal */}
+      <PaymentMethodModal
+        isOpen={showPaymentModal}
+        onClose={() => !checkoutLoading && setShowPaymentModal(false)}
+        onSelectCOD={handleCOD}
+        onSelectRazorpay={handleRazorpay}
+        isLoading={checkoutLoading}
+      />
 
       <div className="cart-shell">
         <main className="cart-layout">

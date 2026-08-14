@@ -19,11 +19,16 @@ export const createRazorpayOrder = async (addressId) => {
     return response.data;
 };
 
-export const verifyRazorPayOrder =async ({razorpay_order_id, razorpay_payment_id, razorpay_signature})=>{
-    const response = await orderApi.post ('/razorpay/verify',{
+export const verifyRazorPayOrder = async ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) => {
+    const response = await orderApi.post('/razorpay/verify', {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature
-    })
-    return response.data
-}
+    });
+    return response.data;
+};
+
+export const getMyOrders = async () => {
+    const response = await orderApi.get('/');
+    return response.data;
+};
