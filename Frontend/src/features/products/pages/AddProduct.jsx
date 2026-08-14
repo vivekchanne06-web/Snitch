@@ -176,7 +176,7 @@ const AddProduct = () => {
 
   /* ─────────────────────────────────────────────────────── */
   return (
-    <div className="h-screen w-screen overflow-hidden flex bg-[#FAF9F5]">
+    <div className="min-h-screen lg:h-screen w-full overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row bg-[#FAF9F5]">
 
       {/* ══ LEFT — 45% Hero Panel ══════════════════════════ */}
       <motion.div
@@ -193,10 +193,10 @@ const AddProduct = () => {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.65, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-        className="flex-1 h-full flex flex-col bg-[#FAF9F5] overflow-hidden"
+        className="flex-1 w-full min-h-screen lg:min-h-0 lg:h-full flex flex-col bg-[#FAF9F5] overflow-visible lg:overflow-hidden"
       >
         {/* ── Top bar (back + seller strip) ─────────────── */}
-        <div className="shrink-0 px-6 pt-6 pb-3 flex items-center justify-between gap-4">
+        <div className="shrink-0 px-4 sm:px-6 pt-5 sm:pt-6 pb-3 flex items-center justify-between gap-4">
           {/* Back */}
           <Link
             to="/seller/products"
@@ -237,7 +237,7 @@ const AddProduct = () => {
         </div>
 
         {/* ── Page title ─────────────────────────────────── */}
-        <div className="shrink-0 px-6 pb-4">
+        <div className="shrink-0 px-4 sm:px-6 pb-4">
           <motion.h1
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -257,8 +257,8 @@ const AddProduct = () => {
           </motion.p>
         </div>
 
-        {/* ── Form body — NO outer scroll; only image grid scrolls ── */}
-        <div className="flex-1 min-h-0 flex flex-col gap-3 px-6 pb-2 overflow-hidden">
+        {/* ── Form body ── */}
+        <div className="flex-1 min-h-0 flex flex-col gap-3 px-4 sm:px-6 pb-2 overflow-visible lg:overflow-hidden">
 
           {/* ── Product Info Card — fixed height (shrink-0) ───────── */}
           <Card delay={0.22} className="shrink-0">

@@ -18,6 +18,8 @@ import {
 import { useProduct } from "../hook/useProduct";
 import { useCart } from "../../cart/hook/useCart";
 import AddToCartToast from "../components/AddToCartToast";
+import DirectCheckoutModal from "../../order/components/DirectCheckoutModal";
+import { useToast } from "../../../shared/components/Toast";
 
 /* ══════════════════════════════════════════════════════════════════
    DESIGN TOKENS — exact palette, typography & shadows
@@ -140,6 +142,10 @@ const SHIMMER_CSS = `
     }
   }
 
+  .product-detail-main {
+    padding-bottom: 64px;
+  }
+
   @media (max-width: 767px) {
     .product-detail-shell {
       --pd-max-width: 100%;
@@ -152,6 +158,10 @@ const SHIMMER_CSS = `
 
     .product-hero-grid {
       gap: 24px;
+    }
+
+    .product-detail-main {
+      padding-bottom: 100px;
     }
   }
 `;
@@ -807,7 +817,7 @@ const HIGHLIGHTS = [
   { icon: <RotateCcw size={13} />, label: "Easy Returns" },
 ];
 
-const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
+const ProductInfoPanel = ({ product, selectedVariant, onVariantChange, onBuyNow }) => {
   const [wishlisted, setWishlisted] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -999,6 +1009,7 @@ const ProductInfoPanel = ({ product, selectedVariant, onVariantChange }) => {
         <motion.button
           whileHover={{ scale: 1.015, y: -2 }}
           whileTap={{ scale: 0.98 }}
+          onClick={onBuyNow}
           style={{
             width: "100%", height: "50px",
             background: C.primary,
@@ -1326,7 +1337,7 @@ const RelatedProducts = ({ currentId }) => {
 /* ══════════════════════════════════════════════════════════════════
    STICKY MOBILE BOTTOM ACTION BAR
    ══════════════════════════════════════════════════════════════════ */
-const MobileStickyBar = ({ product, selectedVariant }) => {
+const MobileStickyBar = ({ product, selectedVariant, onBuyNow }) => {
   const [addedToCart, setAddedToCart] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
@@ -1402,6 +1413,7 @@ const MobileStickyBar = ({ product, selectedVariant }) => {
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.97 }}
+          onClick={onBuyNow}
           style={{
             flex: 1.5, height: "50px",
             background: C.primary, color: "#FFFFFF",
@@ -1516,13 +1528,34 @@ const NotFoundState = () => {
    ══════════════════════════════════════════════════════════════════ */
 const ProductDetail = () => {
   const { ProductId } = useParams();
+  const navigate = useNavigate();
+  const user = useSelector((s) => s.auth.user);
+  const { showToast } = useToast();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [directCheckoutOpen, setDirectCheckoutOpen] = useState(false);
   const { handleGetProductDetail } = useProduct();
+
+  const handleBuyNowClick = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!selectedVariant) {
+      showToast({
+        title: "Variant Required",
+        message: "Please select a size/variant before clicking Buy Now.",
+        type: "error",
+        duration: 3500,
+      });
+      return;
+    }
+    setDirectCheckoutOpen(true);
+  };
 
   /* Auto-select first variant when product loads */
   useEffect(() => {
@@ -1591,7 +1624,7 @@ const ProductDetail = () => {
     >
       <style>{SHIMMER_CSS}</style>
 
-      <main>
+      <main className="product-detail-main">
         <AnimatePresence mode="wait">
           {/* Loading Skeleton */}
           {loading && (
@@ -1656,6 +1689,7 @@ const ProductDetail = () => {
                         product={product}
                         selectedVariant={selectedVariant}
                         onVariantChange={setSelectedVariant}
+                        onBuyNow={handleBuyNowClick}
                       />
                     </div>
                   </div>
@@ -1677,7 +1711,24 @@ const ProductDetail = () => {
         </AnimatePresence>
 
         {/* Sticky mobile bar — pass selectedVariant so it can call the real API */}
-        {!loading && product && <MobileStickyBar product={product} selectedVariant={selectedVariant} />}
+        {!loading && product && (
+          <MobileStickyBar
+            product={product}
+            selectedVariant={selectedVariant}
+            onBuyNow={handleBuyNowClick}
+          />
+        )}
+
+        {/* Direct Checkout Modal for Buy Now (Zero Cart Interference) */}
+        {product && selectedVariant && (
+          <DirectCheckoutModal
+            isOpen={directCheckoutOpen}
+            onClose={() => setDirectCheckoutOpen(false)}
+            product={product}
+            selectedVariant={selectedVariant}
+            quantity={1}
+          />
+        )}
       </main>
     </motion.div>
   );

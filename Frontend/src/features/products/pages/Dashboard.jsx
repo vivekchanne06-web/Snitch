@@ -111,7 +111,7 @@ const StatCard = ({ icon: Icon, label, value, delay }) => (
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.45, delay: delay || 0, ease: [0.22, 1, 0.36, 1] }}
-    className="flex items-center gap-3.5 bg-white rounded-2xl border border-[#DAD9D4]/70 shadow-[0_2px_12px_rgba(61,57,41,0.06)] px-5 py-4 flex-1 min-w-0"
+    className="flex items-center gap-3.5 bg-white rounded-2xl border border-[#DAD9D4]/70 shadow-[0_2px_12px_rgba(61,57,41,0.06)] px-4 sm:px-5 py-3.5 sm:py-4 flex-1 min-w-[130px]"
   >
     <div className="w-9 h-9 rounded-xl bg-[#A95A3A]/10 flex items-center justify-center shrink-0">
       <Icon size={17} className="text-[#A95A3A]" />
@@ -573,14 +573,14 @@ const Dashboard = () => {
         }
       `}</style>
 
-      <div className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12 py-10">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-8 sm:py-10">
 
         {/* Header row */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-end justify-between gap-4 mb-8"
+          className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8"
         >
           <div>
             <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-[#B4B2A7] mb-1.5">
@@ -601,7 +601,7 @@ const Dashboard = () => {
             onClick={() => navigate("/seller/products/add")}
             whileHover={{ scale: 1.015, y: -1 }}
             whileTap={{ scale: 0.985 }}
-            className="relative shrink-0 h-11 px-6 bg-[#A95A3A] text-white text-sm font-semibold tracking-wide rounded-none shadow-[0_4px_20px_rgba(169,90,58,0.25)] hover:bg-[#8B4A2F] hover:shadow-[0_6px_24px_rgba(169,90,58,0.36)] transition-all duration-200 overflow-hidden flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A95A3A] focus-visible:ring-offset-2"
+            className="relative shrink-0 h-11 px-6 bg-[#A95A3A] text-white text-sm font-semibold tracking-wide rounded-none shadow-[0_4px_20px_rgba(169,90,58,0.25)] hover:bg-[#8B4A2F] hover:shadow-[0_6px_24px_rgba(169,90,58,0.36)] transition-all duration-200 overflow-hidden flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A95A3A] focus-visible:ring-offset-2 w-full sm:w-auto"
           >
             <span
               className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"

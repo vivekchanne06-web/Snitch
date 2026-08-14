@@ -82,13 +82,14 @@ const PaymentMethodModal = ({
               left: "50%",
               transform: "translate(-50%, -50%)",
               zIndex: 1001,
-              width: "min(440px, calc(100vw - 32px))",
+              width: "min(440px, calc(100vw - 24px))",
+              maxHeight: "calc(100dvh - 32px)",
+              overflowY: "auto",
               background: "var(--color-background, #FAF9F5)",
               border: "1px solid var(--color-border, #DAD9D4)",
               borderRadius: "var(--radius-xl, 18px)",
               boxShadow:
                 "0 24px 60px -8px rgba(61, 57, 41, 0.22), 0 8px 24px rgba(0,0,0,0.06)",
-              overflow: "hidden",
             }}
           >
             {/* ── Header ───────────────────────────────────────── */}
@@ -97,7 +98,7 @@ const PaymentMethodModal = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "20px 24px 16px",
+                padding: "clamp(14px, 4vw, 20px) clamp(16px, 4vw, 24px) 14px",
                 borderBottom: "1px solid var(--color-border, #DAD9D4)",
               }}
             >
@@ -243,8 +244,8 @@ const PaymentOption = ({
       width: "100%",
       display: "flex",
       alignItems: "center",
-      gap: "16px",
-      padding: "16px 18px",
+      gap: "clamp(10px, 3vw, 16px)",
+      padding: "clamp(12px, 3.5vw, 16px) clamp(12px, 3.5vw, 18px)",
       background: primary ? "var(--color-primary, #A95A3A)" : "var(--color-surface, #FFFFFF)",
       border: primary
         ? "1.5px solid var(--color-primary, #A95A3A)"

@@ -97,6 +97,21 @@ const CART_CSS = `
     }
   }
 
+  @media (max-width: 380px) {
+    .cart-layout {
+      padding-inline: 14px;
+    }
+    .cart-item-row {
+      grid-template-columns: 76px 1fr;
+      gap: 12px;
+      padding: 12px;
+    }
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
   .qty-btn {
     width: 32px;
     height: 32px;

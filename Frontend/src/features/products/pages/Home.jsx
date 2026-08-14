@@ -673,7 +673,7 @@ const CollectionSection = ({ products, loading }) => {
               exit={{ opacity: 0 }}
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 200px), 1fr))",
                 gap: "20px",
               }}
             >
@@ -751,7 +751,7 @@ const CollectionSection = ({ products, loading }) => {
               exit={{ opacity: 0 }}
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 200px), 1fr))",
                 gap: "20px",
               }}
             >

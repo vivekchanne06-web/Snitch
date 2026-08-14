@@ -41,7 +41,7 @@ const ORDER_CSS = `
   .orders-layout {
     max-width: 860px;
     margin: 0 auto;
-    padding: 0 clamp(20px, 5vw, 48px);
+    padding: 0 clamp(14px, 4vw, 48px);
     padding-top: 104px;
     padding-bottom: 80px;
   }
@@ -345,7 +345,7 @@ const OrderCard = ({ order, index }) => {
       className="order-card"
     >
       {/* ── Card Header ─────────────────────────────────────── */}
-      <div style={{ padding: "20px 24px" }}>
+      <div style={{ padding: "clamp(14px, 4vw, 20px) clamp(16px, 4vw, 24px)" }}>
         <div
           style={{
             display: "flex",
@@ -455,13 +455,13 @@ const OrderCard = ({ order, index }) => {
 
       {/* ── Divider ──────────────────────────────────────────── */}
       <div
-        style={{ height: "1px", background: "var(--color-border)", margin: "0 24px" }}
+        style={{ height: "1px", background: "var(--color-border)", margin: "0 clamp(16px, 4vw, 24px)" }}
       />
 
       {/* ── Delivery & Address (always visible) ──────────────── */}
       <div
         style={{
-          padding: "14px 24px",
+          padding: "12px clamp(16px, 4vw, 24px)",
           display: "flex",
           gap: "20px",
           flexWrap: "wrap",
@@ -510,7 +510,7 @@ const OrderCard = ({ order, index }) => {
       </div>
 
       {/* ── Toggle items ─────────────────────────────────────── */}
-      <div style={{ padding: "0 24px 20px" }}>
+      <div style={{ padding: "0 clamp(16px, 4vw, 24px) clamp(14px, 4vw, 20px)" }}>
         <button
           onClick={() => setExpanded((v) => !v)}
           style={{

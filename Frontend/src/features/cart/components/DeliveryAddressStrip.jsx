@@ -55,6 +55,7 @@ const DeliveryAddressStrip = () => {
           alignItems: "flex-start",
           justifyContent: "space-between",
           gap: "12px",
+          flexWrap: "wrap",
         }}
       >
         {/* Left: label + address info */}

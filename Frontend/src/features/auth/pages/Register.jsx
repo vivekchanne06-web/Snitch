@@ -232,7 +232,7 @@ const Register = () => {
       </div>
 
       {/* ── Right: Registration Form ───────────────────────────────── */}
-      <div className="flex items-center justify-center min-h-screen px-5 py-10 sm:px-8 lg:px-10 bg-[#FAF9F5] relative overflow-hidden">
+      <div className="flex items-center justify-center min-h-screen px-4 py-8 sm:px-8 lg:px-10 bg-[#FAF9F5] relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#E9E6DC]/50 blur-3xl" />
@@ -259,7 +259,7 @@ const Register = () => {
           </div>
 
           {/* Card */}
-          <div className="bg-white rounded-2xl shadow-[0_2px_24px_rgba(61,57,41,0.08)] border border-[#DAD9D4]/60 p-8 sm:p-10">
+          <div className="bg-white rounded-2xl shadow-[0_2px_24px_rgba(61,57,41,0.08)] border border-[#DAD9D4]/60 p-5 sm:p-8 lg:p-10">
             {/* Heading */}
             <div className="mb-8">
               <motion.h1

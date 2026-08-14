@@ -1804,7 +1804,7 @@ const EditVariantModal = ({ productId, product, variant, onClose }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px",
+        padding: "clamp(10px, 3vw, 20px)",
         background: "rgba(30, 25, 18, 0.55)",
         backdropFilter: "blur(4px)",
       }}
@@ -1821,9 +1821,9 @@ const EditVariantModal = ({ productId, product, variant, onClose }) => {
           borderRadius: "16px",
           width: "100%",
           maxWidth: "640px",
-          maxHeight: "90vh",
+          maxHeight: "calc(100dvh - 24px)",
           overflowY: "auto",
-          padding: "clamp(20px, 3vw, 28px)",
+          padding: "clamp(14px, 3vw, 28px)",
           boxShadow: "0 16px 48px rgba(61,57,41,0.2)",
           position: "relative",
         }}
@@ -2090,7 +2090,7 @@ const EditVariantModal = ({ productId, product, variant, onClose }) => {
           </div>
 
           {/* ── FIELD 2 & 3: Price & Stock ────────────────────────────── */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: "16px" }}>
             {/* Field 2: Price */}
             <div>
               <label

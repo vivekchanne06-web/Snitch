@@ -98,11 +98,11 @@ const Navbar = () => {
           right: 0,
           zIndex: 100,
           height: `${NAVBAR_HEIGHT}px`,
-          padding: "0 clamp(20px, 5vw, 64px)",
+          padding: "0 clamp(12px, 4vw, 64px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: "24px",
+          gap: "clamp(10px, 2.5vw, 24px)",
           background: scrolled
             ? "rgba(250,249,245,0.97)"
             : "rgba(250,249,245,0.95)",
@@ -119,7 +119,7 @@ const Navbar = () => {
           onClick={() => navigate("/home")}
           style={{
             fontFamily: '"Playfair Display", Georgia, serif',
-            fontSize: "1.5rem",
+            fontSize: "clamp(1.25rem, 4.5vw, 1.5rem)",
             fontWeight: 600,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
@@ -350,6 +350,8 @@ const Navbar = () => {
               WebkitBackdropFilter: "blur(16px)",
               borderBottom: `1px solid ${C.border}`,
               padding: "8px 0 16px",
+              maxHeight: `calc(100dvh - ${NAVBAR_HEIGHT}px)`,
+              overflowY: "auto",
             }}
           >
             {navLinks.map(({ label, to }) => (

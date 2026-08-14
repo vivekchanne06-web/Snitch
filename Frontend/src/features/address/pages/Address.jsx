@@ -23,7 +23,7 @@ const ADDRESS_CSS = `
   .address-layout {
     max-width: 700px;
     margin: 0 auto;
-    padding: 0 clamp(20px, 5vw, 48px);
+    padding: 0 clamp(14px, 4vw, 48px);
     padding-top: 104px;
     padding-bottom: 80px;
   }

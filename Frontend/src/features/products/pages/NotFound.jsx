@@ -17,7 +17,7 @@ const NotFound = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 24px",
+        padding: "40px clamp(16px, 4vw, 24px)",
         textAlign: "center",
         fontFamily: "var(--font-sans)",
       }}

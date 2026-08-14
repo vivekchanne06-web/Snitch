@@ -25,10 +25,10 @@ const TOAST_CSS = `
     width: calc(100vw - 32px);
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .atc-toast-root {
       top: auto;
-      bottom: 24px;
+      bottom: 96px;
       right: 16px;
       left: 16px;
       max-width: none;

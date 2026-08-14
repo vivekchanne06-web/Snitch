@@ -40,7 +40,7 @@ const AddressCard = ({ address, isSelected, onSelect, index, onUpdate, onDelete 
         background: "#FFFFFF",
         border: `1.5px solid ${isSelected ? "#A95A3A" : "#DAD9D4"}`,
         borderRadius: "var(--radius-lg)",
-        padding: "20px 22px",
+        padding: "clamp(14px, 4vw, 22px)",
         cursor: "pointer",
         transition: "border-color 0.22s ease, box-shadow 0.22s ease",
         boxShadow: isSelected

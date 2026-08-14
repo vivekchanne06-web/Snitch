@@ -91,7 +91,7 @@ const AddressForm = ({ onSubmit, onCancel, isSubmitting, initialData = null }) =
         background: "#FFFFFF",
         border: "1px solid #DAD9D4",
         borderRadius: "var(--radius-lg)",
-        padding: "22px 24px 24px",
+        padding: "clamp(16px, 4vw, 24px)",
       }}
     >
       {/* ── Form header ─────────────────────────────────── */}
