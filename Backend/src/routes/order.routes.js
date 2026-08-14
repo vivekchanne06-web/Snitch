@@ -1,9 +1,11 @@
 import {Router} from 'express';
-import {createCODOrder} from '../controller/order.controller.js';
+import {createCODOrder,createRazorpayOrder,verifyRazorpayPayment} from '../controller/order.controller.js';
 import { aunthicateUser } from '../middleware/auth.middleware.js';
 
 const orderRouter = Router();
 
 orderRouter.post("/cod", aunthicateUser, createCODOrder);
+orderRouter.post("/razorpay", aunthicateUser, createRazorpayOrder);
+orderRouter.post("/razorpay/verify", aunthicateUser, verifyRazorpayPayment);
 
 export default orderRouter;

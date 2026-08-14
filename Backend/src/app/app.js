@@ -42,7 +42,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/address", addressRouter);
-app.use("/api/order", orderRouter);
+app.use("/api/orders", orderRouter);
 
 
 

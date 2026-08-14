@@ -1,4 +1,4 @@
-import { addItemInCart, getCartDetails, verifyOrderPayment, incrementQuantityInCart, createPaymentOrder, decrementQuantityInCart, removeItemFromCart } from "../service/cart.api"
+import { addItemInCart, getCartDetails, incrementQuantityInCart, decrementQuantityInCart, removeItemFromCart } from "../service/cart.api"
 import { useDispatch } from "react-redux"
 import { setCart, incrementQuantity, decrementQuantity, removeItem } from "../state/cart.slice"
 
@@ -69,42 +69,12 @@ export const useCart = () => {
             console.error(error.response?.data?.message || error.message);
         }
     }
-
-    async function handlePayment() {
-        try {
-            const data = await createPaymentOrder()
-            return data.order
-        } catch (error) {
-            console.error(error.response?.data?.message || error.message);
-        }
-    }
-
-    async function handleVerifyOrderPayment({
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-    }) {
-        try {
-            const data = await verifyOrderPayment(
-                razorpay_order_id,
-                razorpay_payment_id,
-                razorpay_signature
-            );
-            return data.success;
-        } catch (error) {
-            console.error(error.response?.data?.message || error.message);
-        }
-    }
-
     return {
         handleAddToCart,
         handleGetCart,
         handleIncrement,
         handleDecrement,
         handleRemoveFromCart,
-        handlePayment,
-        handleVerifyOrderPayment
     }
-
 
 }

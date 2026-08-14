@@ -35,18 +35,5 @@ export const removeItemFromCart = async ({ productId, variantId }) => {
     return response.data
 }
 
-export const createPaymentOrder = async() => {
-    const response = await cartApi.post('/payment/create/order')
-    return response.data
-}
 
-export const verifyOrderPayment = async({razorpay_order_id, razorpay_payment_id, razorpay_signature}) => {
-    const response = await cartApi.post('/payment/verify/order',{
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature
-    })
-    
-    return response.data
-}
     
