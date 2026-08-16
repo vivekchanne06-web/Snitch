@@ -14,7 +14,6 @@ export const useOrder = () => {
             const data = await createCODOrder(addressId);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -24,7 +23,6 @@ export const useOrder = () => {
             const data = await createRazorpayOrder(addressId);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -34,7 +32,6 @@ export const useOrder = () => {
             const data = await verifyRazorPayOrder(paymentData);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -44,7 +41,6 @@ export const useOrder = () => {
             const data = await getMyOrders();
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -54,7 +50,6 @@ export const useOrder = () => {
             const data = await createBuyNowCODOrder(payload);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -64,7 +59,6 @@ export const useOrder = () => {
             const data = await createBuyNowRazorpayOrder(payload);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }
@@ -74,7 +68,6 @@ export const useOrder = () => {
             const data = await verifyBuyNowRazorpayPayment(paymentData);
             return data;
         } catch (error) {
-            console.error(error.response?.data?.message || error.message);
             throw error;
         }
     }

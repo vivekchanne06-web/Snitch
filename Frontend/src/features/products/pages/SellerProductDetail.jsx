@@ -1150,7 +1150,6 @@ const AddVariantForm = ({ productId, product, onSuccess, onCancel }) => {
 
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err) {
-      console.error(err);
       setErrorMsg(err.response?.data?.message || err.message || "Failed to add variant. Please try again.");
     } finally {
       setSubmitting(false);
@@ -1786,7 +1785,6 @@ const EditVariantModal = ({ productId, product, variant, onClose }) => {
 
       onClose();
     } catch (err) {
-      console.error(err);
       setErrorMsg(
         err.response?.data?.message || err.message || "Failed to update variant. Please try again."
       );

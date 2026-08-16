@@ -17,7 +17,6 @@ export const addProduct = async (FormData) => {
 export const getSellerProduct = async () => {
     try {
         const response = await productApi.get("/seller");
-        console.log(response.data);
         return response.data;
     } catch (error) {
         throw error;

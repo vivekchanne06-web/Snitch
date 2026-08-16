@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useMatches } from "react-router-dom";
+import { useNavigate, Link, useMatches, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
-import { Menu, X, ShoppingBag, LogOut } from "lucide-react";
+import { Menu, X, ShoppingBag, LogOut, Package } from "lucide-react";
 import { useAuth } from "../../features/auth/hook/useAuth";
 
 /* ── Design tokens — matches Snitch visual identity ─────── */
@@ -20,9 +20,12 @@ const NAVBAR_HEIGHT = 72;
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const matches = useMatches();
   const user = useSelector((s) => s.auth.user);
   const { handleLogout } = useAuth();
+
+  const isOrdersActive = location.pathname === "/orders";
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -186,6 +189,33 @@ const Navbar = () => {
             flexShrink: 0,
           }}
         >
+          {/* Orders Icon — shown only for authenticated users */}
+          {user && (
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.12, y: -1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate("/orders")}
+              aria-label="Orders"
+              title="Orders"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: isOrdersActive ? C.primary : C.text,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "color 0.2s ease",
+                padding: "4px",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = C.primary)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = isOrdersActive ? C.primary : C.text)}
+            >
+              <Package size={20} strokeWidth={isOrdersActive ? 2.2 : 1.8} />
+            </motion.button>
+          )}
+
           {/* Cart Icon — shown only when route allows and user is not a seller */}
           {showCart && (!user || user.role !== "seller" || user.role !== "buyer") && (
             <motion.button
@@ -384,6 +414,40 @@ const Navbar = () => {
                 {label}
               </Link>
             ))}
+
+            {user && (
+              <Link
+                to="/orders"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "14px clamp(20px, 5vw, 32px)",
+                  fontFamily: '"Outfit", sans-serif',
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: isOrdersActive ? C.primary : C.text,
+                  textDecoration: "none",
+                  borderBottom: `1px solid ${C.border}`,
+                  background: isOrdersActive ? "rgba(169,90,58,0.04)" : "transparent",
+                  transition: "color 0.15s ease, background 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = C.primary;
+                  e.currentTarget.style.background = "rgba(169,90,58,0.04)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = isOrdersActive ? C.primary : C.text;
+                  e.currentTarget.style.background = isOrdersActive ? "rgba(169,90,58,0.04)" : "transparent";
+                }}
+              >
+                <Package size={18} strokeWidth={isOrdersActive ? 2.2 : 1.8} />
+                <span>Orders</span>
+              </Link>
+            )}
 
             {user && (
               <button

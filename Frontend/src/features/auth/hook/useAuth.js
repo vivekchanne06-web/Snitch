@@ -63,7 +63,7 @@ export const useAuth = () => {
             dispatch(setUser(data.user))
             return data;
         } catch (error) {
-            console.error("Failed to fetch user", error);
+            // Unauthenticated guest user session — expected behavior
         }
         finally {
             dispatch(setLoading(false));
@@ -78,7 +78,7 @@ export const useAuth = () => {
             dispatch(setUser(null))
             return data;
         } catch (error) {
-            console.error("Failed to fetch user", error);
+            // Logout error handled gracefully
         }
         finally {
             dispatch(setLoading(false));

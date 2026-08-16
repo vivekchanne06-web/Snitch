@@ -222,7 +222,6 @@ const ProductCard = ({ product, index, onDelete }) => {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
   const images = (product.images || []).map((img) => img.url);
-  console.log(product.images);
 
   return (
     <motion.div

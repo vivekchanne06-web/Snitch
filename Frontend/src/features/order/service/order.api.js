@@ -29,7 +29,7 @@ export const verifyRazorPayOrder = async ({ razorpay_order_id, razorpay_payment_
 };
 
 export const getMyOrders = async () => {
-    const response = await orderApi.get('/');
+    const response = await orderApi.get('');
     return response.data;
 };
 
