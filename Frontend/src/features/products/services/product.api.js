@@ -26,7 +26,7 @@ export const getSellerProduct = async () => {
 
 export const getAllProducts = async () => {
     try {
-        const response = await productApi.get("/");
+        const response = await productApi.get("");
         return response.data;
     } catch (error) {
         throw error;
