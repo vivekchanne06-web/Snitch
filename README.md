@@ -1,6 +1,3 @@
-Absolutely. Copy everything below directly into your repository's **`README.md`** file.
-
-````markdown
 # 🛍️ Snitch — Premium Fashion Marketplace
 
 <p align="center">
@@ -224,7 +221,7 @@ Google OAuth
 Authentication
   ↓
 Frontend
-````
+```
 
 The production OAuth callback is configured through an environment variable.
 
@@ -1477,4 +1474,3 @@ Please check the repository for the applicable license before using, modifying, 
 <p align="center">
   <strong>Snitch — Premium Fashion Marketplace</strong>
 </p>
-```
