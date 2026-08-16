@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from "../config/config.js";
 import redis from "../config/cache.js";
 
+
 async function sendTokenResponse(user, res, message) {
     const token = jwt.sign({
         id: user._id
@@ -106,7 +107,7 @@ export const googleCallback = async (req, res) => {
 
         res.cookie('token', token);
 
-    res.redirect(`http://localhost:5173`)
+    res.redirect(`${config.FRONTEND_URL}/home`);
 }
 
 export const getCurrentUser = async (req, res) => {
