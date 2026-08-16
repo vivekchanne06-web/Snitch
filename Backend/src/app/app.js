@@ -12,12 +12,18 @@ import addressRouter from "../routes/address.route.js";
 import orderRouter from "../routes/order.routes.js";
 const app = express();
 
+const allowedOrigins = [
+    config.FRONTEND_URL || "https://snitch-theta.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174",
+];
+
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "http://localhost:5173" || "http://localhost:5174", 
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }));
 
